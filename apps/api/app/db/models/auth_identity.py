@@ -3,17 +3,19 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship
-
-from app.db.models import BaseModel
+from sqlalchemy import Column, DateTime, Index
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import func
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.db.models.user import User
 
 
-class AuthIdentity(BaseModel, table=True):
+class AuthIdentity(SQLModel, table=True):
     """Maps an external OAuth/auth provider identity to one backend User.
 
     Better Auth/Next.js owns browser auth; the backend only needs stable
@@ -21,22 +23,29 @@ class AuthIdentity(BaseModel, table=True):
     """
 
     __tablename__ = "auth_identities"
+    __table_args__ = (
+        Index("ix_auth_identities_provider_subject", "provider", "provider_subject", unique=True),
+    )
 
-    # Foreign key to users.id
+    id: uuid.UUID = Field(
+        default=None,
+        sa_column=Column(UUID(as_uuid=True), primary_key=True, nullable=False, server_default=func.gen_random_uuid()),
+    )
     user_id: uuid.UUID = Field(
         nullable=False,
         index=True,
         foreign_key="users.id",
     )
-
-    # Provider name: discord, github, or dev (local dev provider)
     provider: str = Field(nullable=False, max_length=50)
-
-    # Stable provider user ID / subject claim
     provider_subject: str = Field(nullable=False, max_length=255)
-
-    # Provider email at time of linking, optional
     email: str | None = Field(default=None, max_length=255)
+    created_at: datetime = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False),
+    )
 
-    # Relationship
     user: User = Relationship(back_populates="auth_identities")

@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import uuid
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlmodel import Field, Relationship
-
-from app.db.models import BaseModel
+from sqlalchemy import Column, DateTime
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.sql import func
+from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.db.models.analysis_job import AnalysisJob
@@ -14,7 +17,7 @@ if TYPE_CHECKING:
     from app.db.models.upload import Upload
 
 
-class User(BaseModel, table=True):
+class User(SQLModel, table=True):
     """Backend-owned user record.
 
     Stays provider-agnostic. Better Auth/Next.js owns browser auth;
@@ -23,22 +26,22 @@ class User(BaseModel, table=True):
 
     __tablename__ = "users"
 
-    # Nullable: some OAuth providers may not return an email
+    id: uuid.UUID = Field(
+        default=None,
+        sa_column=Column(UUID(as_uuid=True), primary_key=True, nullable=False, server_default=func.gen_random_uuid()),
+    )
     email: str | None = Field(default=None, max_length=255, index=True)
-
-    # Display name from provider or local profile
     display_name: str | None = Field(default=None, max_length=255)
-
-    # Optional provider avatar URL
     avatar_url: str | None = Field(default=None, max_length=500)
+    created_at: datetime = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False),
+    )
 
-    # Relationships
-    auth_identities: list[AuthIdentity] = Relationship(
-        back_populates="user",
-    )
-    uploads: list[Upload] = Relationship(
-        back_populates="user",
-    )
-    analysis_jobs: list[AnalysisJob] = Relationship(
-        back_populates="user",
-    )
+    auth_identities: list[AuthIdentity] = Relationship(back_populates="user")
+    uploads: list[Upload] = Relationship(back_populates="user")
+    analysis_jobs: list[AnalysisJob] = Relationship(back_populates="user")

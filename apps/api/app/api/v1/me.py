@@ -1,7 +1,10 @@
 """Current user endpoint."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+
+from app.auth.dependencies import resolve_current_user
+from app.db.models import User
 
 router = APIRouter()
 
@@ -14,14 +17,17 @@ class MeResponse(BaseModel):
 
 
 @router.get("/me", response_model=MeResponse)
-async def get_me() -> MeResponse:
-    """Placeholder: returns a mock user for Phase 1.
+async def get_me(
+    current_user: User = Depends(resolve_current_user),
+) -> MeResponse:
+    """Return the authenticated user's profile.
 
-    Phase 1D will implement real auth with Better Auth token validation.
+    Requires Authorization header (Bearer token) in production.
+    In local development, accepts X-Dev-User-Id header.
     """
     return MeResponse(
-        id="00000000-0000-0000-0000-000000000001",
-        email=None,
-        display_name="Local Dev User",
-        avatar_url=None,
+        id=str(current_user.id),
+        email=current_user.email,
+        display_name=current_user.display_name,
+        avatar_url=current_user.avatar_url,
     )

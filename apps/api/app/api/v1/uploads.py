@@ -1,17 +1,20 @@
-"""Upload metadata endpoint."""
+"""Upload metadata endpoint with real database operations."""
 
-from datetime import UTC, datetime
+from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, status
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.auth.dependencies import resolve_current_user
+from app.db.models import Upload, UploadKind, UploadStatus, User
+from app.db.session import get_db
 
 router = APIRouter()
 
-
-class UploadKind(str):
-    REPLAY = "replay"
-    SCREENSHOT = "screenshot"
-    MATCH_SUMMARY = "match_summary"
+MAX_SIZE_BYTES = 5 * 1024 * 1024 * 1024  # 5 GB placeholder
 
 
 class UploadCreateRequest(BaseModel):
@@ -31,38 +34,54 @@ class UploadCreateResponse(BaseModel):
     created_at: datetime
 
 
-MAX_SIZE_BYTES = 5 * 1024 * 1024 * 1024  # 5 GB placeholder
+class UploadListResponse(BaseModel):
+    uploads: list[UploadCreateResponse]
+    total: int
+
+
+# Dependency injection types for FastAPI
+CurrentUser = Annotated[User, Depends(resolve_current_user)]
+DBSession = Annotated[AsyncSession, Depends(get_db)]
 
 
 @router.post("/uploads", response_model=UploadCreateResponse, status_code=status.HTTP_201_CREATED)
-async def create_upload(body: UploadCreateRequest) -> UploadCreateResponse:
+async def create_upload(
+    body: UploadCreateRequest,
+    current_user: CurrentUser,
+    db: DBSession,
+) -> UploadCreateResponse:
     """Create an upload metadata record.
 
-    Phase 1 stores metadata only. Real R2 presigned upload flow comes later.
+    Requires Authorization header (Bearer token) in production.
+    In local development, accepts X-Dev-User-Id header.
 
     Validation rules:
     - kind must be replay, screenshot, or match_summary
     - match_summary requires summary_text
     - replay/screenshot require filename
     - size_bytes, if provided, must be <= 5GB
+
+    Phase 1 stores metadata only. Real R2 presigned upload flow comes later.
     """
     # Validate kind
-    valid_kinds = {UploadKind.REPLAY, UploadKind.SCREENSHOT, UploadKind.MATCH_SUMMARY}
-    if body.kind not in valid_kinds:
+    try:
+        kind = UploadKind(body.kind)
+    except ValueError:
+        valid_kinds = ", ".join(e.value for e in UploadKind)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"kind must be one of: {', '.join(sorted(valid_kinds))}",
-        )
+            detail=f"kind must be one of: {valid_kinds}",
+        ) from None
 
     # Validate summary_text for match_summary
-    if body.kind == UploadKind.MATCH_SUMMARY and not body.summary_text:
+    if kind == UploadKind.MATCH_SUMMARY and not body.summary_text:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="summary_text is required when kind is match_summary",
         )
 
     # Validate filename for replay/screenshot
-    if body.kind in (UploadKind.REPLAY, UploadKind.SCREENSHOT) and not body.filename:
+    if kind in (UploadKind.REPLAY, UploadKind.SCREENSHOT) and not body.filename:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="filename is required for replay and screenshot uploads",
@@ -81,11 +100,67 @@ async def create_upload(body: UploadCreateRequest) -> UploadCreateResponse:
                 detail=f"size_bytes exceeds maximum allowed ({MAX_SIZE_BYTES})",
             )
 
-    # Return mock response — real DB insert comes in Phase 1D
-    return UploadCreateResponse(
-        id="00000000-0000-0000-0000-000000000001",
-        kind=body.kind,
-        status="created",
+    # Create the upload record
+    upload = Upload(
+        user_id=current_user.id,
+        kind=kind,
         filename=body.filename,
-        created_at=datetime.now(UTC),
+        content_type=body.content_type,
+        size_bytes=body.size_bytes,
+        storage_key=body.storage_key,
+        summary_text=body.summary_text,
+        status=UploadStatus.CREATED,
+    )
+    db.add(upload)
+    await db.flush()
+    await db.refresh(upload)
+
+    return UploadCreateResponse(
+        id=str(upload.id),
+        kind=upload.kind.value,
+        status=upload.status.value,
+        filename=upload.filename,
+        created_at=upload.created_at,
+    )
+
+
+@router.get("/uploads", response_model=UploadListResponse)
+async def list_uploads(
+    current_user: CurrentUser,
+    db: DBSession,
+) -> UploadListResponse:
+    """List all uploads for the authenticated user.
+
+    Requires Authorization header (Bearer token) in production.
+    In local development, accepts X-Dev-User-Id header.
+    """
+    from sqlmodel import select, func
+
+    # Get total count
+    count_result = await db.execute(
+        select(func.count()).select_from(Upload).where(Upload.user_id == current_user.id)
+    )
+    total = count_result.scalar() or 0
+
+    # Get paginated uploads ordered by created_at desc
+    result = await db.execute(
+        select(Upload)
+        .where(Upload.user_id == current_user.id)
+        .order_by(Upload.created_at.desc())
+        .limit(50)
+    )
+    uploads = result.scalars().all()
+
+    return UploadListResponse(
+        uploads=[
+            UploadCreateResponse(
+                id=str(u.id),
+                kind=u.kind.value,
+                status=u.status.value,
+                filename=u.filename,
+                created_at=u.created_at,
+            )
+            for u in uploads
+        ],
+        total=total,
     )

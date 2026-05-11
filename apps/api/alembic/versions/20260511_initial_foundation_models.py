@@ -8,12 +8,10 @@ Create Date: 2026-05-11
 
 from __future__ import annotations
 
-import uuid
-from enum import Enum as PyEnum
-
-from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import UUID
+
+from alembic import op
 
 # Revision identifiers, used by Alembic.
 revision = "0001"
