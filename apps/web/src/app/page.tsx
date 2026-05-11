@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchHealth, fetchMe, listUploads } from "@/lib/api";
+import { SignInButton, SignOutButton } from "@/auth/ui";
 
 const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -9,8 +10,16 @@ export default function HomePage() {
   return (
     <main className="min-h-screen p-8 max-w-5xl mx-auto space-y-8">
       <header className="border-b border-slate-800 pb-4">
-        <h1 className="text-3xl font-bold text-slate-50">Deadlock AI Coach</h1>
-        <p className="text-slate-400 mt-1">AI-powered coaching and match analysis</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-50">Deadlock AI Coach</h1>
+            <p className="text-slate-400 mt-1">AI-powered coaching and match analysis</p>
+          </div>
+          <div className="flex gap-2">
+            <SignInButton provider="discord" />
+            <SignInButton provider="github" />
+          </div>
+        </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
