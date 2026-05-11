@@ -430,9 +430,13 @@ Reason: these fields should be added with the real Phase 2/3 worker and AI workf
 
 ## 8. Implementation Phases
 
-### Phase 1A — Repository and Local Infrastructure
+Use one branch for all Phase 1 foundation work:
 
-- Branch: `feature/foundation-phase-1a-infra`
+- Branch: `feature/foundation-phase-1`
+- Each subphase below should be implemented as one or more focused commits on that branch.
+- Do not create separate branches for Phase 1A/1B/1C/etc. unless a subphase becomes large enough to need independent review.
+
+### Phase 1A — Repository and Local Infrastructure
 - Commits:
   - [ ] Add monorepo folders and root ignore/env files.
   - [ ] Add Docker Compose for Postgres and Redis.
@@ -442,8 +446,6 @@ Reason: these fields should be added with the real Phase 2/3 worker and AI workf
   - README explains the local foundation architecture.
 
 ### Phase 1B — FastAPI Backend Shell
-
-- Branch: `feature/foundation-phase-1b-api`
 - Commits:
   - [ ] Add FastAPI project with settings and app factory/entrypoint.
   - [ ] Add `/api/v1/health` and `/api/v1/ready` endpoints.
@@ -455,8 +457,6 @@ Reason: these fields should be added with the real Phase 2/3 worker and AI workf
   - Backend tests pass.
 
 ### Phase 1C — Database Models and Migrations
-
-- Branch: `feature/foundation-phase-1c-db`
 - Commits:
   - [ ] Add SQLModel session setup and shared timestamp/UUID conventions.
   - [ ] Add only the foundation models: `User`, `AuthIdentity`, `Upload`, and `AnalysisJob`.
@@ -472,8 +472,6 @@ Reason: these fields should be added with the real Phase 2/3 worker and AI workf
   - Backend can open and close DB sessions successfully.
 
 ### Phase 1D — Auth Boundary and Upload Metadata API
-
-- Branch: `feature/foundation-phase-1d-auth-uploads`
 - Commits:
   - [ ] Add FastAPI current-user dependency with local dev token strategy.
   - [ ] Add `/api/v1/me` endpoint.
@@ -485,8 +483,6 @@ Reason: these fields should be added with the real Phase 2/3 worker and AI workf
   - Authenticated requests can create upload records.
 
 ### Phase 1E — Next.js Frontend Shell
-
-- Branch: `feature/foundation-phase-1e-web`
 - Commits:
   - [ ] Add Next.js App Router project with TypeScript and Tailwind.
   - [ ] Add base layout and landing/dashboard page.
@@ -498,8 +494,6 @@ Reason: these fields should be added with the real Phase 2/3 worker and AI workf
   - Upload metadata form can call the backend in local dev.
 
 ### Phase 1F — Better Auth Integration Skeleton
-
-- Branch: `feature/foundation-phase-1f-better-auth`
 - Commits:
   - [ ] Add Better Auth dependencies/config structure.
   - [ ] Add Discord/GitHub provider env placeholders.
@@ -511,8 +505,6 @@ Reason: these fields should be added with the real Phase 2/3 worker and AI workf
   - The auth boundary decision is documented clearly.
 
 ### Phase 1G — Foundation Review and Cleanup
-
-- Branch: `feature/foundation-phase-1g-review`
 - Commits:
   - [ ] Add final README setup verification steps.
   - [ ] Add minimal CI workflow if desired.
