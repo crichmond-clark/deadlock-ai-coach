@@ -1,0 +1,63 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.env
+.venv
+venv/
+ENV/
+
+# Node
+node_modules/
+.pnp
+.pnp.js
+.next/
+out/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.tsbuildinfo
+.next/
+.cache/
+
+# Database
+*.db
+*.sqlite3
+
+# Docker
+docker-compose.override.yml
+
+# Infra
+infra/data/
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript
+apps/web/tsconfig.tsbuildinfo
+apps/api/.mypy_cache/
+apps/api/.ruff_cache/
