@@ -5,7 +5,7 @@ description = "Deadlock AI Platform — FastAPI Backend"
 readme = "../../README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.115.0",
+    "fastapi[standard]>=0.115.0",
     "uvicorn[standard]>=0.34.0",
     "pydantic>=2.10.0",
     "pydantic-settings>=2.7.0",
@@ -13,7 +13,6 @@ dependencies = [
     "asyncpg>=0.30.0",
     "psycopg2-binary>=2.9.10",
     "alembic>=1.14.0",
-    "alembic-autogenerate-enums>=0.1.2",
     "redis>=5.2.0",
     "arq>=0.26.0",
     "python-multipart>=0.0.20",
@@ -48,3 +47,5 @@ warn_unused_ignores = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"

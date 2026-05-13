@@ -35,7 +35,7 @@ docker compose -f infra/docker-compose.yml ps
 ```
 
 Services will be available at:
-- **PostgreSQL**: `localhost:5432` (user: `deadlock_ai`, password: `deadlock_ai_local`, db: `deadlock_ai`)
+- **PostgreSQL**: `localhost:5433` (user: `deadlock_ai`, password: `deadlock_ai_local`, db: `deadlock_ai`)
 - **Redis**: `localhost:6379`
 
 ### 3. Configure Environment

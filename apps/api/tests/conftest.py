@@ -2,7 +2,6 @@
 
 import pytest
 
-
 # Mark all async tests so pytest-asyncio runs them properly
 pytest_plugins = ["pytest_asyncio"]
 
