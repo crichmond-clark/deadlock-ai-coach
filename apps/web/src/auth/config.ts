@@ -1,32 +1,45 @@
-/**
- * Better Auth configuration — skeleton for Phase 1F.
- *
- * Better Auth v1.6.10 has a significantly different API from earlier versions.
- * This file creates a minimal placeholder structure and defers real OAuth
- * configuration to Phase 2 when we can properly test the API.
- *
- * Architecture (confirmed in auth-boundary.md):
- * - Next.js + Better Auth owns browser authentication and session handling
- * - FastAPI validates signed auth tokens and resolves backend user records
- *
- * Local development: X-Dev-User-Id header bypass (working, tested in Phase 1D)
- *
- * TODO (Phase 2):
- * - Verify Better Auth v1.6.10 API surface
- * - Configure Discord and GitHub OAuth adapters
- * - Set up session cookie handling for production
- * - Implement JWT token validation in FastAPI resolve_current_user
- */
+import { betterAuth } from "better-auth";
+import { nextCookies } from "better-auth/next-js";
 
-export const authConfig = {
-  // Social OAuth providers — configure when ready
-  socialProviders: {} as Record<string, { clientId: string; clientSecret: string }>,
+const baseURL = process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const authSecret =
+  process.env.BETTER_AUTH_SECRET ||
+  process.env.AUTH_SECRET ||
+  "local-dev-secret-change-in-production";
 
-  session: {
-    expiresIn: 60 * 60 * 24 * 7, // 7 days
-    updateAge: 60 * 60 * 24, // 1 day
+const discordClientId = process.env.DISCORD_CLIENT_ID;
+const discordClientSecret = process.env.DISCORD_CLIENT_SECRET;
+const githubClientId = process.env.GITHUB_CLIENT_ID;
+const githubClientSecret = process.env.GITHUB_CLIENT_SECRET;
+
+export const auth = betterAuth({
+  appName: "Deadlock AI Coach",
+  baseURL,
+  basePath: "/api/auth",
+  secret: authSecret,
+  socialProviders: {
+    ...(discordClientId && discordClientSecret
+      ? {
+          discord: {
+            clientId: discordClientId,
+            clientSecret: discordClientSecret,
+          },
+        }
+      : {}),
+    ...(githubClientId && githubClientSecret
+      ? {
+          github: {
+            clientId: githubClientId,
+            clientSecret: githubClientSecret,
+          },
+        }
+      : {}),
   },
+  session: {
+    expiresIn: 60 * 60 * 24 * 7,
+    updateAge: 60 * 60 * 24,
+  },
+  plugins: [nextCookies()],
+});
 
-  // Auth secret — must match FastAPI AUTH_SECRET for token validation
-  secret: process.env.AUTH_SECRET || "local-dev-secret-change-in-production",
-};
+export type AuthSession = typeof auth.$Infer.Session;
