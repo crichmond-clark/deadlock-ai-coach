@@ -124,3 +124,68 @@ export async function listUploads() {
         "/api/v1/uploads",
     );
 }
+
+// =============================================================================
+// Analysis jobs
+// =============================================================================
+
+export interface AnalysisResultSummary {
+    id: string;
+    title: string;
+    summary: string;
+    schema_version: string;
+}
+
+export interface AnalysisJobResponse {
+    id: string;
+    upload_id: string | null;
+    status: string;
+    progress: number;
+    queue_job_id: string | null;
+    error_message: string | null;
+    created_at: string;
+    started_at: string | null;
+    completed_at: string | null;
+    result: AnalysisResultSummary | null;
+}
+
+export interface AnalysisResultResponse {
+    id: string;
+    job_id: string;
+    upload_id: string | null;
+    result_kind: string;
+    schema_version: string;
+    title: string;
+    summary: string;
+    payload: {
+        highlights?: string[];
+        improvement_areas?: string[];
+        recommended_focus?: string[];
+        next_steps?: string[];
+        [key: string]: unknown;
+    };
+    created_at: string;
+}
+
+export async function createAnalysisJob(uploadId: string) {
+    return request<AnalysisJobResponse>("/api/v1/analysis-jobs", {
+        method: "POST",
+        body: JSON.stringify({ upload_id: uploadId }),
+    });
+}
+
+export async function listAnalysisJobs() {
+    return request<{ jobs: AnalysisJobResponse[]; total: number }>(
+        "/api/v1/analysis-jobs",
+    );
+}
+
+export async function fetchAnalysisJob(jobId: string) {
+    return request<AnalysisJobResponse>(`/api/v1/analysis-jobs/${jobId}`);
+}
+
+export async function fetchAnalysisResult(jobId: string) {
+    return request<AnalysisResultResponse>(
+        `/api/v1/analysis-jobs/${jobId}/result`,
+    );
+}
