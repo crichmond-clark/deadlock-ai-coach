@@ -1,5 +1,7 @@
 """Current user endpoint."""
 
+from typing import Annotated
+
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
@@ -7,6 +9,8 @@ from app.auth.dependencies import resolve_current_user
 from app.db.models import User
 
 router = APIRouter()
+
+CurrentUser = Annotated[User, Depends(resolve_current_user)]
 
 
 class MeResponse(BaseModel):
@@ -18,7 +22,7 @@ class MeResponse(BaseModel):
 
 @router.get("/me", response_model=MeResponse)
 async def get_me(
-    current_user: User = Depends(resolve_current_user),
+    current_user: CurrentUser,
 ) -> MeResponse:
     """Return the authenticated user's profile.
 

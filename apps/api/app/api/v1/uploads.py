@@ -1,12 +1,12 @@
 """Upload metadata endpoint with real database operations."""
 
-from typing import Annotated
-
 from datetime import datetime
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel import func, select
 
 from app.auth.dependencies import resolve_current_user
 from app.db.models import Upload, UploadKind, UploadStatus, User
@@ -134,8 +134,6 @@ async def list_uploads(
     Requires Authorization header (Bearer token) in production.
     In local development, accepts X-Dev-User-Id header.
     """
-    from sqlmodel import select, func
-
     # Get total count
     count_result = await db.execute(
         select(func.count()).select_from(Upload).where(Upload.user_id == current_user.id)
