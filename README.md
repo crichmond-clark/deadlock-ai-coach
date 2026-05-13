@@ -51,7 +51,8 @@ cp .env.example .env.local
 
 ```bash
 cd apps/api
-uv sync
+uv sync --extra dev
+uv run alembic upgrade head
 uv run fastapi dev --port 8000
 ```
 
@@ -66,6 +67,23 @@ npm run dev
 ```
 
 App available at `http://localhost:3000`
+
+### 6. Run Async Worker
+
+Phase 2 uses Arq + Redis for fake asynchronous analysis jobs.
+
+```bash
+cd apps/api
+uv run arq app.workers.worker.WorkerSettings
+```
+
+### 7. Auth, Uploads, and Analysis Jobs
+
+- Local dev API calls use `X-Dev-User-Id` until production token validation is wired.
+- Better Auth is mounted at `/api/auth/[...all]` with Discord/GitHub provider configuration from environment variables.
+- Add OAuth credentials to `.env.local` using `.env.example` or `apps/web/.env.example`.
+- The frontend shell includes a basic upload metadata form backed by `POST /api/v1/uploads`.
+- Phase 2 adds fake async analysis: `POST /api/v1/analysis-jobs` enqueues a worker task, the frontend polls job status, and `/analyses/[jobId]` displays the persisted fake result.
 
 ## Project Structure
 
@@ -85,6 +103,7 @@ deadlock-ai-coach/
 
 - [[docs/deadlock-ai-platform-overarching-plan|Overarching Architecture Plan]]
 - [[docs/phase-1-foundation-plan|Phase 1 Foundation Plan]]
+- [[docs/phase-2-async-pipeline-plan|Phase 2 Async Pipeline Plan]]
 
 ## Phases
 
