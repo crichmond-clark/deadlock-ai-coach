@@ -9,7 +9,7 @@ Create Date: 2026-05-11
 from __future__ import annotations
 
 import sqlalchemy as sa
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import ENUM, UUID
 
 from alembic import op
 
@@ -24,9 +24,33 @@ def upgrade() -> None:
     # ========================================================================
     # Enum types
     # ========================================================================
-    op.execute("CREATE TYPE uploadkind AS ENUM ('replay', 'screenshot', 'match_summary')")
-    op.execute("CREATE TYPE uploadstatus AS ENUM ('created', 'uploaded', 'failed')")
-    op.execute("CREATE TYPE analysisjobstatus AS ENUM ('queued', 'running', 'succeeded', 'failed', 'cancelled')")
+    op.execute(
+        """
+        DO $$ BEGIN
+            CREATE TYPE uploadkind AS ENUM ('replay', 'screenshot', 'match_summary');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+        """
+    )
+    op.execute(
+        """
+        DO $$ BEGIN
+            CREATE TYPE uploadstatus AS ENUM ('created', 'uploaded', 'failed');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+        """
+    )
+    op.execute(
+        """
+        DO $$ BEGIN
+            CREATE TYPE analysisjobstatus AS ENUM ('queued', 'running', 'succeeded', 'failed', 'cancelled');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+        """
+    )
 
     # ========================================================================
     # users
@@ -76,7 +100,7 @@ def upgrade() -> None:
         "uploads",
         sa.Column("id", UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("user_id", UUID(as_uuid=True), nullable=False),
-        sa.Column("kind", sa.Enum("replay", "screenshot", "match_summary", name="uploadkind", create_type=False), nullable=False),
+        sa.Column("kind", ENUM("replay", "screenshot", "match_summary", name="uploadkind", create_type=False), nullable=False),
         sa.Column("filename", sa.String(length=255), nullable=True),
         sa.Column("content_type", sa.String(length=100), nullable=True),
         sa.Column("size_bytes", sa.BigInteger(), nullable=True),
@@ -84,7 +108,7 @@ def upgrade() -> None:
         sa.Column("summary_text", sa.String(length=10000), nullable=True),
         sa.Column(
             "status",
-            sa.Enum("created", "uploaded", "failed", name="uploadstatus", create_type=False),
+            ENUM("created", "uploaded", "failed", name="uploadstatus", create_type=False),
             nullable=False,
             server_default="created",
         ),
@@ -109,7 +133,7 @@ def upgrade() -> None:
         sa.Column("upload_id", UUID(as_uuid=True), nullable=True),
         sa.Column(
             "status",
-            sa.Enum("queued", "running", "succeeded", "failed", "cancelled", name="analysisjobstatus", create_type=False),
+            ENUM("queued", "running", "succeeded", "failed", "cancelled", name="analysisjobstatus", create_type=False),
             nullable=False,
             server_default="queued",
         ),

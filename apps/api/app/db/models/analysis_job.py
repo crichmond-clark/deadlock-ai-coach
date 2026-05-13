@@ -1,13 +1,11 @@
 """AnalysisJob model — placeholder for Phase 2 async processing."""
 
-from __future__ import annotations
-
 import uuid
 from datetime import datetime
 from enum import StrEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import Column, DateTime, Index
+from sqlalchemy import Column, DateTime, Enum, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
@@ -23,6 +21,11 @@ class AnalysisJobStatus(StrEnum):
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     CANCELLED = "cancelled"
+
+
+def enum_values(enum_cls: type[StrEnum]) -> list[str]:
+    """Return enum values for SQLAlchemy PostgreSQL enum persistence."""
+    return [member.value for member in enum_cls]
 
 
 class AnalysisJob(SQLModel, table=True):
@@ -54,9 +57,11 @@ class AnalysisJob(SQLModel, table=True):
         foreign_key="uploads.id",
     )
     status: AnalysisJobStatus = Field(
-        nullable=False,
         default=AnalysisJobStatus.QUEUED,
-        max_length=50,
+        sa_column=Column(
+            Enum(AnalysisJobStatus, name="analysisjobstatus", values_callable=enum_values),
+            nullable=False,
+        ),
     )
     progress: int = Field(
         nullable=False,
@@ -74,5 +79,5 @@ class AnalysisJob(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False),
     )
 
-    user: User = Relationship(back_populates="analysis_jobs")
-    upload: Upload | None = Relationship(back_populates="analysis_jobs")
+    user: "User" = Relationship(back_populates="analysis_jobs")
+    upload: Optional["Upload"] = Relationship(back_populates="analysis_jobs")

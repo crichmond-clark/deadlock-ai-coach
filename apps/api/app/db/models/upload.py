@@ -1,13 +1,11 @@
 """Upload model — user-submitted input metadata."""
 
-from __future__ import annotations
-
 import uuid
 from datetime import datetime
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, DateTime, Index
+from sqlalchemy import BigInteger, Column, DateTime, Enum, Index
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
@@ -27,6 +25,11 @@ class UploadStatus(StrEnum):
     CREATED = "created"
     UPLOADED = "uploaded"
     FAILED = "failed"
+
+
+def enum_values(enum_cls: type[StrEnum]) -> list[str]:
+    """Return enum values for SQLAlchemy PostgreSQL enum persistence."""
+    return [member.value for member in enum_cls]
 
 
 class Upload(SQLModel, table=True):
@@ -50,16 +53,23 @@ class Upload(SQLModel, table=True):
         index=True,
         foreign_key="users.id",
     )
-    kind: UploadKind = Field(nullable=False, max_length=50)
+    kind: UploadKind = Field(
+        sa_column=Column(
+            Enum(UploadKind, name="uploadkind", values_callable=enum_values),
+            nullable=False,
+        )
+    )
     filename: str | None = Field(default=None, max_length=255)
     content_type: str | None = Field(default=None, max_length=100)
-    size_bytes: int | None = Field(default=None)
+    size_bytes: int | None = Field(default=None, sa_column=Column(BigInteger, nullable=True))
     storage_key: str | None = Field(default=None, max_length=500)
     summary_text: str | None = Field(default=None, max_length=10000)
     status: UploadStatus = Field(
-        nullable=False,
         default=UploadStatus.CREATED,
-        max_length=50,
+        sa_column=Column(
+            Enum(UploadStatus, name="uploadstatus", values_callable=enum_values),
+            nullable=False,
+        ),
     )
     created_at: datetime = Field(
         default=None,
@@ -70,5 +80,5 @@ class Upload(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False),
     )
 
-    user: User = Relationship(back_populates="uploads")
-    analysis_jobs: list[AnalysisJob] = Relationship(back_populates="upload")
+    user: "User" = Relationship(back_populates="uploads")
+    analysis_jobs: list["AnalysisJob"] = Relationship(back_populates="upload")

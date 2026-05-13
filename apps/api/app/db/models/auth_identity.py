@@ -1,7 +1,5 @@
 """AuthIdentity model — external OAuth provider identity mapping."""
 
-from __future__ import annotations
-
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -48,4 +46,4 @@ class AuthIdentity(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False),
     )
 
-    user: User = Relationship(back_populates="auth_identities")
+    user: "User" = Relationship(back_populates="auth_identities")

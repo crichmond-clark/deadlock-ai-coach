@@ -1,7 +1,5 @@
 """User model — backend-owned user identity."""
 
-from __future__ import annotations
-
 import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -42,6 +40,6 @@ class User(SQLModel, table=True):
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False),
     )
 
-    auth_identities: list[AuthIdentity] = Relationship(back_populates="user")
-    uploads: list[Upload] = Relationship(back_populates="user")
-    analysis_jobs: list[AnalysisJob] = Relationship(back_populates="user")
+    auth_identities: list["AuthIdentity"] = Relationship(back_populates="user")
+    uploads: list["Upload"] = Relationship(back_populates="user")
+    analysis_jobs: list["AnalysisJob"] = Relationship(back_populates="user")
