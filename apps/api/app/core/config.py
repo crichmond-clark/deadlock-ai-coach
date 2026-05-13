@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=".env.local",
         env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
@@ -30,14 +30,21 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     # Database
-    database_url: str = "postgresql+asyncpg://deadlock_ai:deadlock_ai_local@localhost:5432/deadlock_ai"
-    database_sync_url: str = "postgresql+psycopg2://deadlock_ai:deadlock_ai_local@localhost:5432/deadlock_ai"
+    database_url: str = (
+        "postgresql+asyncpg://deadlock_ai:deadlock_ai_local@localhost:5433/deadlock_ai"
+    )
+    database_sync_url: str = (
+        "postgresql+psycopg2://deadlock_ai:deadlock_ai_local@localhost:5433/deadlock_ai"
+    )
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
 
     # Auth
     auth_secret: str = "local-dev-secret-change-in-production"
+
+    # CORS
+    allowed_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     # Object Storage (R2)
     r2_account_id: str = ""

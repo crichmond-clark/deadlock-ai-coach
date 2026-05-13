@@ -12,6 +12,7 @@ Local development:
 - This allows testing auth-protected endpoints without setting up OAuth
 """
 
+import uuid
 from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, status
@@ -68,8 +69,15 @@ async def _get_or_create_dev_user(db: AsyncSession, dev_user_id: str) -> User | 
     """
     from sqlmodel import select
 
+    # Convert the header string to a proper UUID for type safety
+    try:
+        dev_uuid = uuid.UUID(dev_user_id)
+    except ValueError:
+        # Invalid UUID format in the header — reject
+        return None
+
     # Try to find existing user
-    result = await db.execute(select(User).where(User.id == dev_user_id))
+    result = await db.execute(select(User).where(User.id == dev_uuid))
     user = result.scalar_one_or_none()
 
     if user:
@@ -77,7 +85,7 @@ async def _get_or_create_dev_user(db: AsyncSession, dev_user_id: str) -> User | 
 
     # Create a new dev user with a deterministic display name
     user = User(
-        id=dev_user_id,  # Use the provided ID directly
+        id=dev_uuid,
         display_name=f"Dev User {dev_user_id[:8]}",
         email=f"dev-{dev_user_id[:8]}@localhost",
     )
