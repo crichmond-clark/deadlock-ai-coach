@@ -11,6 +11,7 @@ from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from app.db.models.analysis_result import AnalysisResult
     from app.db.models.upload import Upload
     from app.db.models.user import User
 
@@ -68,8 +69,16 @@ class AnalysisJob(SQLModel, table=True):
         default=0,
     )
     error_message: str | None = Field(default=None, max_length=500)
-    started_at: datetime | None = Field(default=None)
-    completed_at: datetime | None = Field(default=None)
+    queue_job_id: str | None = Field(default=None, max_length=255)
+    attempt_count: int = Field(nullable=False, default=0)
+    started_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+    )
+    completed_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+    )
     created_at: datetime = Field(
         default=None,
         sa_column=Column(DateTime(timezone=True), server_default=func.now(), nullable=False),
@@ -81,3 +90,4 @@ class AnalysisJob(SQLModel, table=True):
 
     user: "User" = Relationship(back_populates="analysis_jobs")
     upload: Optional["Upload"] = Relationship(back_populates="analysis_jobs")
+    result: Optional["AnalysisResult"] = Relationship(back_populates="job")

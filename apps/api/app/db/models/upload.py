@@ -12,6 +12,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.db.models.analysis_job import AnalysisJob
+    from app.db.models.analysis_result import AnalysisResult
     from app.db.models.user import User
 
 
@@ -82,3 +83,4 @@ class Upload(SQLModel, table=True):
 
     user: "User" = Relationship(back_populates="uploads")
     analysis_jobs: list["AnalysisJob"] = Relationship(back_populates="upload")
+    analysis_results: list["AnalysisResult"] = Relationship(back_populates="upload")
