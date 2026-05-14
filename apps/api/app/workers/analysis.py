@@ -4,10 +4,13 @@ import uuid
 
 from sqlmodel import select
 
-from app.db.models import AnalysisJob, AnalysisJobStatus, AnalysisResult, Upload
+from app.core.config import settings
+from app.db.models import AnalysisJob, AnalysisJobStatus, AnalysisResult, Upload, UploadKind
 from app.db.session import get_db_context
 from app.services.analysis_jobs import mark_job_failed, now_utc
 from app.services.fake_analysis import build_fake_analysis_payload
+from app.services.replay_artifacts import create_succeeded_artifact, parse_summary
+from app.services.replay_parser import parse_replay_file, resolve_local_replay_path
 
 
 async def process_analysis_job(ctx: dict, job_id: str) -> None:
@@ -36,7 +39,26 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
             job.started_at = job.started_at or now_utc()
             await db.flush()
 
-            payload = build_fake_analysis_payload(upload)
+            replay_artifact = None
+            replay_parse_summary = None
+            if upload.kind == UploadKind.REPLAY:
+                replay_path = resolve_local_replay_path(upload.storage_key)
+                if replay_path is not None and settings.replay_parser_command:
+                    parse_result = await parse_replay_file(replay_path, max_events=settings.replay_parser_max_events)
+                    replay_artifact = await create_succeeded_artifact(db, job, parse_result)
+                    replay_parse_summary = parse_summary(parse_result)
+                    job.progress = 50
+                    await db.flush()
+
+            payload = build_fake_analysis_payload(upload, replay_parse_summary)
+            if replay_artifact is not None:
+                payload["source"].update(
+                    {
+                        "replay_artifact_id": str(replay_artifact.id),
+                        "replay_schema_version": replay_artifact.schema_version,
+                        "parser_name": replay_artifact.parser_name,
+                    }
+                )
             job.progress = 60
             await db.flush()
 
