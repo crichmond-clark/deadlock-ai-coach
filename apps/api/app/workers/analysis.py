@@ -8,6 +8,7 @@ from app.core.config import settings
 from app.db.models import AnalysisJob, AnalysisJobStatus, AnalysisResult, Upload, UploadKind
 from app.db.session import get_db_context
 from app.services.analysis_jobs import mark_job_failed, now_utc
+from app.services.deadlock_api.enrichment import enrich_match_context
 from app.services.fake_analysis import build_fake_analysis_payload
 from app.services.replay_artifacts import create_succeeded_artifact, parse_summary
 from app.services.replay_parser import parse_replay_file, resolve_local_replay_path
@@ -41,6 +42,7 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
 
             replay_artifact = None
             replay_parse_summary = None
+            enriched_context = None
             if upload.kind == UploadKind.REPLAY:
                 replay_path = resolve_local_replay_path(upload.storage_key)
                 if replay_path is not None and settings.replay_parser_command:
@@ -48,6 +50,18 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
                     replay_artifact = await create_succeeded_artifact(db, job, parse_result)
                     replay_parse_summary = parse_summary(parse_result)
                     job.progress = 50
+                    await db.flush()
+
+                    # Enrichment: combine replay artifact with Deadlock API data
+                    try:
+                        enriched_context = await enrich_match_context(
+                            db,
+                            replay_artifact_id=replay_artifact.id,
+                            match_id=parse_result.match.get("match_id"),
+                        )
+                    except Exception:
+                        enriched_context = None
+                    job.progress = 55
                     await db.flush()
 
             payload = build_fake_analysis_payload(upload, replay_parse_summary)
@@ -59,6 +73,8 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
                         "parser_name": replay_artifact.parser_name,
                     }
                 )
+            if enriched_context is not None:
+                payload["enriched_context"] = enriched_context.model_dump()
             job.progress = 60
             await db.flush()
 

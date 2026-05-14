@@ -1,6 +1,7 @@
 """Deadlock API integration — game API and assets API clients."""
 
 from app.services.deadlock_api.client import DeadlockAssetsAPIClient, DeadlockGameAPIClient
+from app.services.deadlock_api.enrichment import enrich_match_context
 from app.services.deadlock_api.errors import (
     DeadlockApiClientError,
     DeadlockApiError,
@@ -21,4 +22,5 @@ __all__ = [
     "DeadlockApiTimeoutError",
     "DeadlockAssetsAPIClient",
     "DeadlockGameAPIClient",
+    "enrich_match_context",
 ]
