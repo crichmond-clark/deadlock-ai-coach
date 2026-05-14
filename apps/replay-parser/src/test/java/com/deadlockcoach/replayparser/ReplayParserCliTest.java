@@ -23,6 +23,20 @@ class ReplayParserCliTest {
     }
 
     @Test
+    void acceptsDebugDiscoveryFlag() throws IOException {
+        Path replay = tempDir.resolve("debug.dem");
+        Path output = tempDir.resolve("debug-artifact.json");
+        Files.writeString(replay, "demo");
+
+        int code = ReplayParserCli.run(new String[] {"--input", replay.toString(), "--output", output.toString(), "--debug-discovery"});
+
+        assertEquals(0, code);
+        String json = Files.readString(output);
+        assertTrue(json.contains("debug_discovery"));
+        assertTrue(json.contains("first_bytes_hex"));
+    }
+
+    @Test
     void writesSchemaValidJsonToOutputFile() throws IOException {
         Path replay = tempDir.resolve("match.dem");
         Path output = tempDir.resolve("artifact.json");

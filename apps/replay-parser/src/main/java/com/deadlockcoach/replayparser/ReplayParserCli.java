@@ -22,7 +22,7 @@ public final class ReplayParserCli {
             if (!Files.isReadable(options.input())) {
                 throw new ReplayParserException(3, "input file is missing or unreadable");
             }
-            NormalizedReplayArtifact artifact = new ClarityReplayParser().parse(options.input(), options.maxEvents());
+            NormalizedReplayArtifact artifact = new ClarityReplayParser().parse(options.input(), options.maxEvents(), options.debugDiscovery());
             ObjectMapper mapper = new ObjectMapper();
             if (options.pretty()) {
                 mapper.enable(SerializationFeature.INDENT_OUTPUT);
@@ -43,25 +43,27 @@ public final class ReplayParserCli {
         }
     }
 
-    record Options(Path input, Path output, boolean pretty, int maxEvents) {
+    record Options(Path input, Path output, boolean pretty, int maxEvents, boolean debugDiscovery) {
         static Options parse(String[] args) {
             Path input = null;
             Path output = null;
             boolean pretty = false;
             int maxEvents = 500;
+            boolean debugDiscovery = false;
             for (int i = 0; i < args.length; i++) {
                 switch (args[i]) {
                     case "--input" -> input = Path.of(requireValue(args, ++i, "--input"));
                     case "--output" -> output = Path.of(requireValue(args, ++i, "--output"));
                     case "--pretty" -> pretty = true;
                     case "--max-events" -> maxEvents = parseMaxEvents(requireValue(args, ++i, "--max-events"));
+                    case "--debug-discovery" -> debugDiscovery = true;
                     default -> throw new ReplayParserException(2, "unknown argument: " + args[i]);
                 }
             }
             if (input == null) {
                 throw new ReplayParserException(2, "--input is required");
             }
-            return new Options(input, output, pretty, maxEvents);
+            return new Options(input, output, pretty, maxEvents, debugDiscovery);
         }
 
         private static String requireValue(String[] args, int index, String flag) {
