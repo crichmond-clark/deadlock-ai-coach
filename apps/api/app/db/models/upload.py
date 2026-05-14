@@ -21,6 +21,7 @@ class UploadKind(StrEnum):
     REPLAY = "replay"
     SCREENSHOT = "screenshot"
     MATCH_SUMMARY = "match_summary"
+    MATCH_ID = "match_id"
 
 
 class UploadStatus(StrEnum):
@@ -66,6 +67,7 @@ class Upload(SQLModel, table=True):
     size_bytes: int | None = Field(default=None, sa_column=Column(BigInteger, nullable=True))
     storage_key: str | None = Field(default=None, max_length=500)
     summary_text: str | None = Field(default=None, max_length=10000)
+    match_id: int | None = Field(default=None, sa_column=Column(BigInteger, nullable=True))
     status: UploadStatus = Field(
         default=UploadStatus.CREATED,
         sa_column=Column(

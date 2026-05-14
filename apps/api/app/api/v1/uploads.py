@@ -18,12 +18,13 @@ MAX_SIZE_BYTES = 5 * 1024 * 1024 * 1024  # 5 GB placeholder
 
 
 class UploadCreateRequest(BaseModel):
-    kind: str = Field(..., description="Must be replay, screenshot, or match_summary")
+    kind: str = Field(..., description="Must be replay, screenshot, match_summary, or match_id")
     filename: str | None = None
     content_type: str | None = None
     size_bytes: int | None = None
     storage_key: str | None = None
     summary_text: str | None = None
+    match_id: int | None = Field(default=None, description="Deadlock match ID, required when kind is match_id")
 
 
 class UploadCreateResponse(BaseModel):
@@ -56,8 +57,9 @@ async def create_upload(
     In local development, accepts X-Dev-User-Id header.
 
     Validation rules:
-    - kind must be replay, screenshot, or match_summary
+    - kind must be replay, screenshot, match_summary, or match_id
     - match_summary requires summary_text
+    - match_id requires match_id (the numeric game ID)
     - replay/screenshot require filename
     - size_bytes, if provided, must be <= 5GB
 
@@ -78,6 +80,13 @@ async def create_upload(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="summary_text is required when kind is match_summary",
+        )
+
+    # Validate match_id for match_id
+    if kind == UploadKind.MATCH_ID and not body.match_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="match_id is required when kind is match_id",
         )
 
     # Validate filename for replay/screenshot
@@ -109,6 +118,7 @@ async def create_upload(
         size_bytes=body.size_bytes,
         storage_key=body.storage_key,
         summary_text=body.summary_text,
+        match_id=body.match_id,
         status=UploadStatus.CREATED,
     )
     db.add(upload)

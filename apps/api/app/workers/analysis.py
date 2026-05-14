@@ -64,6 +64,19 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
                     job.progress = 55
                     await db.flush()
 
+            elif upload.kind == UploadKind.MATCH_ID and upload.match_id is not None:
+                job.progress = 40
+                await db.flush()
+                try:
+                    enriched_context = await enrich_match_context(
+                        db,
+                        match_id=upload.match_id,
+                    )
+                except Exception:
+                    enriched_context = None
+                job.progress = 55
+                await db.flush()
+
             payload = build_fake_analysis_payload(upload, replay_parse_summary)
             if replay_artifact is not None:
                 payload["source"].update(
