@@ -1,0 +1,12 @@
+{
+  "id": "match-summary-basic",
+  "name": "Basic match summary coaching",
+  "input_fixture": {
+    "upload_kind": "match_summary",
+    "match_summary_text": "Won lane on Warden, then overextended before mid boss and lost two late fights.",
+    "source_warnings": []
+  },
+  "expected_schema_version": "coaching-analysis-v1",
+  "required_sections": ["improvement_areas", "priority_focus"],
+  "expected_evidence_source_types": ["ai_inference"]
+}

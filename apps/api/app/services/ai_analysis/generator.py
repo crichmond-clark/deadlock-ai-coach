@@ -38,9 +38,13 @@ async def generate_structured_analysis(
     replay_parse_summary: dict[str, Any] | None = None,
     retrieval_context: RetrievalContext | None = None,
     provider: ChatModelProvider | None = None,
+    provider_name: str | None = None,
+    model_name: str | None = None,
 ) -> CoachingAnalysisResult:
     """Call the configured AI provider and return a validated coaching result."""
-    selected_provider = provider or get_chat_provider()
+    selected_provider_name = provider_name or settings.ai_provider
+    selected_model_name = model_name or settings.ai_model
+    selected_provider = provider or get_chat_provider(selected_provider_name)
     input_context = build_analysis_input_context(
         upload=upload,
         replay_parse_summary=replay_parse_summary,
@@ -49,7 +53,7 @@ async def generate_structured_analysis(
     )
     messages = build_coaching_messages(input_context)
     options = AIRequestOptions(
-        model=settings.ai_model,
+        model=selected_model_name,
         temperature=settings.ai_temperature,
         max_output_tokens=settings.ai_max_output_tokens,
         timeout_seconds=settings.ai_timeout_seconds,
@@ -67,8 +71,8 @@ async def generate_structured_analysis(
     model_run = AIModelRun(
         user_id=job.user_id,
         job_id=job.id,
-        provider=settings.ai_provider,
-        model_name=settings.ai_model,
+        provider=selected_provider_name,
+        model_name=selected_model_name,
         prompt_version=PROMPT_VERSION,
         workflow_version=WORKFLOW_VERSION,
         schema_version=SCHEMA_VERSION,
