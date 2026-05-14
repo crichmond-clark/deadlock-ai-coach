@@ -99,7 +99,44 @@ ALLOW_LOCAL_REPLAY_PATHS=true
 
 Replay files are ignored by git. Do not commit `.dem` files or parser output artifacts.
 
-### 8. Auth, Uploads, and Analysis Jobs
+### 8. Structured AI Analysis
+
+By default local analysis stays deterministic:
+
+```env
+ANALYSIS_MODE=fake
+```
+
+To run Phase 3 structured AI analysis without external model calls, use the mock provider:
+
+```env
+ANALYSIS_MODE=ai
+AI_PROVIDER=mock
+AI_MODEL=mock-model
+```
+
+For OpenAI:
+
+```env
+ANALYSIS_MODE=ai
+AI_PROVIDER=openai
+AI_MODEL=gpt-4o-mini
+OPENAI_API_KEY=your_key
+```
+
+For OpenAI-compatible providers such as Ollama Cloud, OpenRouter, vLLM, or LM Studio:
+
+```env
+ANALYSIS_MODE=ai
+AI_PROVIDER=openai_compatible
+AI_BASE_URL=https://your-provider.example/v1
+AI_API_KEY=your_key
+AI_MODEL=your-model
+```
+
+Structured AI results are persisted as `result_kind=structured_ai_analysis` with schema `coaching-analysis-v1`. Raw prompts are not stored unless `AI_STORE_RAW_PROMPTS=true`.
+
+### 9. Auth, Uploads, and Analysis Jobs
 
 - Local dev API calls use `X-Dev-User-Id` until production token validation is wired.
 - Better Auth is mounted at `/api/auth/[...all]` with Discord/GitHub provider configuration from environment variables.
@@ -126,6 +163,9 @@ deadlock-ai-coach/
 - [[docs/deadlock-ai-platform-overarching-plan|Overarching Architecture Plan]]
 - [[docs/phase-1-foundation-plan|Phase 1 Foundation Plan]]
 - [[docs/phase-2-async-pipeline-plan|Phase 2 Async Pipeline Plan]]
+- [[docs/phase-3-structured-ai-analysis-plan|Phase 3 Structured AI Analysis Plan]]
+- [[docs/phase-4-rag-system-plan|Phase 4 RAG System Plan]]
+- [[docs/phase-5-ai-workflow-orchestration-plan|Phase 5 AI Workflow Orchestration Plan]]
 
 ## Phases
 
