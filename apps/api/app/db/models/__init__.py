@@ -1,5 +1,6 @@
 """Database models — re-exports all SQLModel table definitions."""
 
+from app.db.models.ai_model_run import AIModelRun, AIModelRunStatus
 from app.db.models.analysis_job import AnalysisJob, AnalysisJobStatus
 from app.db.models.analysis_result import AnalysisResult
 from app.db.models.auth_identity import AuthIdentity
@@ -12,6 +13,8 @@ from app.db.models.upload import Upload, UploadKind, UploadStatus
 from app.db.models.user import User
 
 __all__ = [
+    "AIModelRun",
+    "AIModelRunStatus",
     "AnalysisJob",
     "AnalysisJobStatus",
     "AnalysisResult",

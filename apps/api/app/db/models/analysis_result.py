@@ -1,4 +1,4 @@
-"""AnalysisResult model — persisted Phase 2 fake analysis output."""
+"""AnalysisResult model — persisted fake or structured AI analysis output."""
 
 import uuid
 from datetime import datetime
@@ -10,13 +10,14 @@ from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from app.db.models.ai_model_run import AIModelRun
     from app.db.models.analysis_job import AnalysisJob
     from app.db.models.upload import Upload
     from app.db.models.user import User
 
 
 class AnalysisResult(SQLModel, table=True):
-    """Structured fake analysis result persisted by the Phase 2 worker."""
+    """Structured analysis result persisted by the worker."""
 
     __tablename__ = "analysis_results"
     __table_args__ = (
@@ -58,3 +59,4 @@ class AnalysisResult(SQLModel, table=True):
     user: "User" = Relationship(back_populates="analysis_results")
     job: "AnalysisJob" = Relationship(back_populates="result")
     upload: Optional["Upload"] = Relationship(back_populates="analysis_results")
+    ai_model_runs: list["AIModelRun"] = Relationship(back_populates="analysis_result")

@@ -10,6 +10,7 @@ from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
+    from app.db.models.ai_model_run import AIModelRun
     from app.db.models.analysis_job import AnalysisJob
     from app.db.models.analysis_result import AnalysisResult
     from app.db.models.auth_identity import AuthIdentity
@@ -47,3 +48,4 @@ class User(SQLModel, table=True):
     analysis_jobs: list["AnalysisJob"] = Relationship(back_populates="user")
     analysis_results: list["AnalysisResult"] = Relationship(back_populates="user")
     replay_parse_artifacts: list["ReplayParseArtifact"] = Relationship(back_populates="user")
+    ai_model_runs: list["AIModelRun"] = Relationship(back_populates="user")

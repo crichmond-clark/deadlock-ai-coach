@@ -7,6 +7,7 @@ from sqlmodel import select
 from app.core.config import settings
 from app.db.models import AnalysisJob, AnalysisJobStatus, AnalysisResult, Upload, UploadKind
 from app.db.session import get_db_context
+from app.services.ai_analysis import generate_structured_analysis
 from app.services.analysis_jobs import mark_job_failed, now_utc
 from app.services.deadlock_api.enrichment import enrich_match_context
 from app.services.fake_analysis import build_fake_analysis_payload
@@ -15,7 +16,7 @@ from app.services.replay_parser import parse_replay_file, resolve_local_replay_p
 
 
 async def process_analysis_job(ctx: dict, job_id: str) -> None:
-    """Process one queued analysis job with deterministic fake analysis."""
+    """Process one queued analysis job."""
     del ctx
     parsed_job_id = uuid.UUID(job_id)
 
@@ -77,17 +78,36 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
                 job.progress = 55
                 await db.flush()
 
-            payload = build_fake_analysis_payload(upload, replay_parse_summary)
-            if replay_artifact is not None:
-                payload["source"].update(
-                    {
-                        "replay_artifact_id": str(replay_artifact.id),
-                        "replay_schema_version": replay_artifact.schema_version,
-                        "parser_name": replay_artifact.parser_name,
-                    }
+            if settings.analysis_mode == "ai":
+                structured_result = await generate_structured_analysis(
+                    db,
+                    job=job,
+                    upload=upload,
+                    replay_artifact=replay_artifact,
+                    enriched_context=enriched_context,
+                    replay_parse_summary=replay_parse_summary,
                 )
-            if enriched_context is not None:
-                payload["enriched_context"] = enriched_context.model_dump()
+                payload = structured_result.model_dump(mode="json")
+                result_kind = "structured_ai_analysis"
+                schema_version = structured_result.schema_version
+                title = structured_result.title
+                summary = structured_result.summary
+            else:
+                payload = build_fake_analysis_payload(upload, replay_parse_summary)
+                if replay_artifact is not None:
+                    payload["source"].update(
+                        {
+                            "replay_artifact_id": str(replay_artifact.id),
+                            "replay_schema_version": replay_artifact.schema_version,
+                            "parser_name": replay_artifact.parser_name,
+                        }
+                    )
+                if enriched_context is not None:
+                    payload["enriched_context"] = enriched_context.model_dump()
+                result_kind = "fake_analysis"
+                schema_version = "fake-analysis-v1"
+                title = payload["title"]
+                summary = payload["summary"]
             job.progress = 60
             await db.flush()
 
@@ -95,8 +115,10 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
                 user_id=job.user_id,
                 job_id=job.id,
                 upload_id=job.upload_id,
-                title=payload["title"],
-                summary=payload["summary"],
+                result_kind=result_kind,
+                schema_version=schema_version,
+                title=title,
+                summary=summary,
                 payload=payload,
             )
             db.add(analysis_result)
