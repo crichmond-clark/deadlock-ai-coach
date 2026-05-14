@@ -12,6 +12,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.db.models.analysis_result import AnalysisResult
+    from app.db.models.replay_parse_artifact import ReplayParseArtifact
     from app.db.models.upload import Upload
     from app.db.models.user import User
 
@@ -91,3 +92,4 @@ class AnalysisJob(SQLModel, table=True):
     user: "User" = Relationship(back_populates="analysis_jobs")
     upload: Optional["Upload"] = Relationship(back_populates="analysis_jobs")
     result: Optional["AnalysisResult"] = Relationship(back_populates="job")
+    replay_parse_artifact: Optional["ReplayParseArtifact"] = Relationship(back_populates="job")
