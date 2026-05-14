@@ -90,6 +90,15 @@ class Settings(BaseSettings):
     rag_top_k: int = 5
     rag_max_source_chars: int = 100_000
 
+    # Workflow orchestration
+    workflow_engine: Literal["simple", "langgraph"] = "simple"
+    workflow_version: str = "analysis-workflow-v1"
+    workflow_step_timeout_seconds: int = 120
+    ai_provider_fallbacks: str = ""
+    ai_schema_repair_retries: int = 1
+    enable_rag_in_analysis: bool = True
+    enable_deadlock_api_enrichment: bool = True
+
     openai_api_key: str = ""
     anthropic_api_key: str = ""
     litellm_api_key: str = ""

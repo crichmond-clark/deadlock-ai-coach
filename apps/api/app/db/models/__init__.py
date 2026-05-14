@@ -14,6 +14,8 @@ from app.db.models.knowledge_source import KnowledgeSource
 from app.db.models.replay_parse_artifact import ReplayParseArtifact
 from app.db.models.upload import Upload, UploadKind, UploadStatus
 from app.db.models.user import User
+from app.db.models.workflow_run import WorkflowRun
+from app.db.models.workflow_step import WorkflowStep
 
 __all__ = [
     "AIModelRun",
@@ -34,4 +36,6 @@ __all__ = [
     "UploadKind",
     "UploadStatus",
     "User",
+    "WorkflowRun",
+    "WorkflowStep",
 ]

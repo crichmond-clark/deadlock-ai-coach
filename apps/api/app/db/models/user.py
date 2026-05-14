@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from app.db.models.knowledge_source import KnowledgeSource
     from app.db.models.replay_parse_artifact import ReplayParseArtifact
     from app.db.models.upload import Upload
+    from app.db.models.workflow_run import WorkflowRun
 
 
 class User(SQLModel, table=True):
@@ -51,3 +52,4 @@ class User(SQLModel, table=True):
     replay_parse_artifacts: list["ReplayParseArtifact"] = Relationship(back_populates="user")
     ai_model_runs: list["AIModelRun"] = Relationship(back_populates="user")
     knowledge_sources: list["KnowledgeSource"] = Relationship(back_populates="owner")
+    workflow_runs: list["WorkflowRun"] = Relationship(back_populates="user")

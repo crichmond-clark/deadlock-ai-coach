@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from app.db.models.replay_parse_artifact import ReplayParseArtifact
     from app.db.models.upload import Upload
     from app.db.models.user import User
+    from app.db.models.workflow_run import WorkflowRun
 
 
 class AnalysisJobStatus(StrEnum):
@@ -95,3 +96,4 @@ class AnalysisJob(SQLModel, table=True):
     result: Optional["AnalysisResult"] = Relationship(back_populates="job")
     replay_parse_artifact: Optional["ReplayParseArtifact"] = Relationship(back_populates="job")
     ai_model_runs: list["AIModelRun"] = Relationship(back_populates="job")
+    workflow_runs: list["WorkflowRun"] = Relationship(back_populates="job")
