@@ -30,7 +30,12 @@ export default function HomePage() {
             <h1 className="text-3xl font-bold text-slate-50">Deadlock AI Coach</h1>
             <p className="text-slate-400 mt-1">AI-powered coaching and match analysis</p>
           </div>
-          <AuthControls />
+          <div className="flex items-center gap-4">
+            <Link href="/strategy-search" className="text-sm text-indigo-300 hover:text-indigo-200 underline">
+              Strategy Search
+            </Link>
+            <AuthControls />
+          </div>
         </div>
       </header>
 

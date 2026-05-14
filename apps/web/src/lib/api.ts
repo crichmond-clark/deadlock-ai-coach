@@ -282,3 +282,78 @@ export async function fetchReplayArtifact(jobId: string) {
         `/api/v1/analysis-jobs/${jobId}/replay-artifact`,
     );
 }
+
+// =============================================================================
+// Strategy Knowledge / RAG
+// =============================================================================
+
+export interface KnowledgeSourceCreateRequest {
+    title: string;
+    source_type: "text" | "markdown" | "note" | "patch_notes" | "guide";
+    content: string;
+    url?: string | null;
+    patch_version?: string | null;
+    hero_ids?: number[];
+    tags?: string[];
+    metadata?: Record<string, unknown>;
+}
+
+export interface KnowledgeSourceResponse {
+    id: string;
+    owner_user_id: string | null;
+    source_type: string;
+    title: string;
+    url: string | null;
+    status: string;
+    patch_version: string | null;
+    hero_ids: number[];
+    tags: string[];
+    chunk_count: number;
+    error_message: string | null;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface StrategySearchResult {
+    chunk_id: string;
+    source_id: string;
+    title: string;
+    snippet: string;
+    score: number;
+    citation_label: string;
+    url: string | null;
+    patch_version: string | null;
+    tags: string[];
+    metadata: Record<string, unknown>;
+}
+
+export interface StrategySearchRequest {
+    query: string;
+    top_k?: number;
+    hero_ids?: number[];
+    tags?: string[];
+    include_global?: boolean;
+}
+
+export async function createKnowledgeSource(data: KnowledgeSourceCreateRequest) {
+    return request<KnowledgeSourceResponse>("/api/v1/knowledge-sources", {
+        method: "POST",
+        body: JSON.stringify(data),
+    });
+}
+
+export async function listKnowledgeSources() {
+    return request<{ sources: KnowledgeSourceResponse[]; total: number }>(
+        "/api/v1/knowledge-sources",
+    );
+}
+
+export async function searchStrategyKnowledge(data: StrategySearchRequest) {
+    return request<{ query: string; results: StrategySearchResult[]; warnings: string[] }>(
+        "/api/v1/strategy-search",
+        {
+            method: "POST",
+            body: JSON.stringify(data),
+        },
+    );
+}
