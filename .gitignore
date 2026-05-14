@@ -61,3 +61,8 @@ npm-debug.log*
 apps/web/tsconfig.tsbuildinfo
 apps/api/.mypy_cache/
 apps/api/.ruff_cache/
+*.dem
+*.dem.bz2
+apps/replay-parser/build/
+apps/replay-parser/.gradle/
+tmp/replay-parser/
