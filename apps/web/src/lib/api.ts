@@ -170,6 +170,78 @@ export interface ReplayParseArtifactResponse {
     created_at: string;
 }
 
+export interface StructuredCoachingPoint {
+    title: string;
+    description: string;
+    impact?: string;
+    category?: string;
+    evidence_refs?: string[];
+}
+
+export interface StructuredKeyMoment {
+    title: string;
+    description: string;
+    timestamp_seconds?: number | null;
+    impact?: string;
+    evidence_refs?: string[];
+}
+
+export interface StructuredBuildAdvice {
+    title: string;
+    description: string;
+    item_name?: string | null;
+    evidence_refs?: string[];
+}
+
+export interface StructuredPracticeFocus {
+    title: string;
+    description: string;
+    timebox_minutes?: number | null;
+    evidence_refs?: string[];
+}
+
+export interface StructuredSourceEvidence {
+    ref_id: string;
+    source_type: string;
+    description: string;
+    data_path?: string | null;
+}
+
+export interface StructuredAIAnalysisPayload {
+    schema_version: "coaching-analysis-v1";
+    title: string;
+    executive_summary: string;
+    confidence: "low" | "medium" | "high";
+    match_context: {
+        hero?: string | null;
+        match_id?: number | null;
+        source_mode: string;
+        duration_seconds?: number | null;
+        summary: string;
+    };
+    strengths: StructuredCoachingPoint[];
+    improvement_areas: StructuredCoachingPoint[];
+    key_moments: StructuredKeyMoment[];
+    build_advice: StructuredBuildAdvice[];
+    priority_focus: StructuredPracticeFocus[];
+    evidence: StructuredSourceEvidence[];
+    source_warnings: Array<{ source: string; code: string; message: string }>;
+    model_metadata: {
+        provider: string;
+        model: string;
+        prompt_version: string;
+        workflow_version: string;
+    };
+}
+
+export interface FakeAnalysisPayload {
+    highlights?: string[];
+    improvement_areas?: string[];
+    recommended_focus?: string[];
+    next_steps?: string[];
+    [key: string]: unknown;
+}
+
 export interface AnalysisResultResponse {
     id: string;
     job_id: string;
@@ -178,13 +250,7 @@ export interface AnalysisResultResponse {
     schema_version: string;
     title: string;
     summary: string;
-    payload: {
-        highlights?: string[];
-        improvement_areas?: string[];
-        recommended_focus?: string[];
-        next_steps?: string[];
-        [key: string]: unknown;
-    };
+    payload: FakeAnalysisPayload | StructuredAIAnalysisPayload;
     created_at: string;
 }
 
