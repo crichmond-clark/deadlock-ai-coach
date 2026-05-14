@@ -4,6 +4,7 @@ from app.db.models.analysis_job import AnalysisJob, AnalysisJobStatus
 from app.db.models.analysis_result import AnalysisResult
 from app.db.models.auth_identity import AuthIdentity
 from app.db.models.base import SQLModel as BaseModel
+from app.db.models.external_match_metadata import ExternalMatchMetadata
 from app.db.models.game_asset import GameAsset
 from app.db.models.hero_asset import HeroAsset
 from app.db.models.replay_parse_artifact import ReplayParseArtifact
@@ -16,6 +17,7 @@ __all__ = [
     "AnalysisResult",
     "AuthIdentity",
     "BaseModel",
+    "ExternalMatchMetadata",
     "GameAsset",
     "HeroAsset",
     "ReplayParseArtifact",
