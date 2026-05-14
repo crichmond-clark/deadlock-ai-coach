@@ -11,6 +11,7 @@ from app.services.ai_analysis import generate_structured_analysis
 from app.services.analysis_jobs import mark_job_failed, now_utc
 from app.services.deadlock_api.enrichment import enrich_match_context
 from app.services.fake_analysis import build_fake_analysis_payload
+from app.services.rag.context import retrieve_strategy_context
 from app.services.replay_artifacts import create_succeeded_artifact, parse_summary
 from app.services.replay_parser import parse_replay_file, resolve_local_replay_path
 
@@ -44,6 +45,7 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
             replay_artifact = None
             replay_parse_summary = None
             enriched_context = None
+            retrieval_context = None
             if upload.kind == UploadKind.REPLAY:
                 replay_path = resolve_local_replay_path(upload.storage_key)
                 if replay_path is not None and settings.replay_parser_command:
@@ -79,6 +81,15 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
                 await db.flush()
 
             if settings.analysis_mode == "ai":
+                retrieval_context = await retrieve_strategy_context(
+                    db,
+                    user_id=job.user_id,
+                    query=build_retrieval_query(upload, replay_parse_summary),
+                    top_k=settings.rag_top_k,
+                )
+                job.progress = 58
+                await db.flush()
+
                 structured_result = await generate_structured_analysis(
                     db,
                     job=job,
@@ -86,6 +97,7 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
                     replay_artifact=replay_artifact,
                     enriched_context=enriched_context,
                     replay_parse_summary=replay_parse_summary,
+                    retrieval_context=retrieval_context,
                 )
                 payload = structured_result.model_dump(mode="json")
                 result_kind = "structured_ai_analysis"
@@ -129,6 +141,18 @@ async def process_analysis_job(ctx: dict, job_id: str) -> None:
         except Exception as exc:
             await mark_job_failed(db, job, exc)
             raise
+
+
+def build_retrieval_query(upload: Upload, replay_parse_summary: dict | None = None) -> str:
+    """Build a compact strategy search query from match inputs."""
+    if upload.summary_text:
+        return upload.summary_text[:1000]
+    if upload.match_id is not None:
+        return f"Deadlock match {upload.match_id} coaching strategy macro objectives build positioning"
+    if replay_parse_summary:
+        match = replay_parse_summary.get("match") if isinstance(replay_parse_summary.get("match"), dict) else {}
+        return f"Deadlock replay coaching strategy {match}"
+    return f"Deadlock {upload.kind} coaching strategy positioning objectives build"
 
 
 async def load_upload(db, job: AnalysisJob) -> Upload:

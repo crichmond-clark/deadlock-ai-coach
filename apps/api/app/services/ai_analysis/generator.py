@@ -19,6 +19,7 @@ from app.schemas.ai_analysis import (
     CoachingAnalysisResult,
 )
 from app.schemas.enriched_match import EnrichedMatchContext
+from app.schemas.retrieval import RetrievalContext
 from app.services.ai_analysis.context import build_analysis_input_context
 from app.services.ai_analysis.prompts import build_coaching_messages
 
@@ -35,6 +36,7 @@ async def generate_structured_analysis(
     replay_artifact: ReplayParseArtifact | None = None,
     enriched_context: EnrichedMatchContext | None = None,
     replay_parse_summary: dict[str, Any] | None = None,
+    retrieval_context: RetrievalContext | None = None,
     provider: ChatModelProvider | None = None,
 ) -> CoachingAnalysisResult:
     """Call the configured AI provider and return a validated coaching result."""
@@ -43,6 +45,7 @@ async def generate_structured_analysis(
         upload=upload,
         replay_parse_summary=replay_parse_summary,
         enriched_context=enriched_context,
+        retrieval_context=retrieval_context,
     )
     messages = build_coaching_messages(input_context)
     options = AIRequestOptions(
@@ -55,6 +58,7 @@ async def generate_structured_analysis(
         "upload_kind": str(upload.kind),
         "has_replay_artifact": replay_artifact is not None,
         "has_enriched_context": enriched_context is not None,
+        "retrieval_result_count": len(retrieval_context.results) if retrieval_context is not None else 0,
         "store_raw_prompts": settings.ai_store_raw_prompts,
     }
     if settings.ai_store_raw_prompts:

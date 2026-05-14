@@ -7,6 +7,7 @@ from typing import Any
 from app.db.models import Upload
 from app.schemas.ai_analysis import AnalysisInputContext
 from app.schemas.enriched_match import EnrichedMatchContext
+from app.schemas.retrieval import RetrievalContext
 
 _MAX_SUMMARY_CHARS = 4000
 _MAX_REPLAY_ITEMS = 20
@@ -17,6 +18,7 @@ def build_analysis_input_context(
     upload: Upload,
     replay_parse_summary: dict[str, Any] | None = None,
     enriched_context: EnrichedMatchContext | None = None,
+    retrieval_context: RetrievalContext | None = None,
 ) -> AnalysisInputContext:
     """Create compact model input context from persisted app data."""
     warnings: list[str] = []
@@ -31,12 +33,15 @@ def build_analysis_input_context(
 
     if enriched_context is not None:
         warnings.extend(warning.message for warning in enriched_context.warnings)
+    if retrieval_context is not None:
+        warnings.extend(retrieval_context.warnings)
 
     return AnalysisInputContext(
         upload_kind=str(upload.kind),
         match_summary_text=summary_text,
         replay_parse_summary=compact_replay,
         enriched_context=enriched_context,
+        retrieval_context=retrieval_context,
         source_warnings=warnings,
     )
 

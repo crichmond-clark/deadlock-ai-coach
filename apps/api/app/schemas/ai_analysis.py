@@ -7,6 +7,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 from app.schemas.enriched_match import EnrichedMatchContext, SourceWarning
+from app.schemas.retrieval import RetrievalContext
 
 SCHEMA_VERSION = "coaching-analysis-v1"
 PROMPT_VERSION = "coaching-analysis-prompt-v1"
@@ -24,7 +25,7 @@ CoachingCategory = Literal[
 ]
 ImpactLevel = Literal["low", "medium", "high"]
 ConfidenceLevel = Literal["low", "medium", "high"]
-EvidenceSourceType = Literal["user_summary", "replay_parse", "deadlock_api", "ai_inference"]
+EvidenceSourceType = Literal["user_summary", "replay_parse", "deadlock_api", "strategy_knowledge", "ai_inference"]
 
 
 class AnalysisInputContext(BaseModel):
@@ -34,6 +35,7 @@ class AnalysisInputContext(BaseModel):
     match_summary_text: str | None = None
     replay_parse_summary: dict[str, Any] | None = None
     enriched_context: EnrichedMatchContext | None = None
+    retrieval_context: RetrievalContext | None = None
     source_warnings: list[str] = Field(default_factory=list)
 
 
