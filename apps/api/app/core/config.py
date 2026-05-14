@@ -53,6 +53,13 @@ class Settings(BaseSettings):
     r2_bucket_name: str = "deadlock-ai-uploads"
     r2_public_url: str = ""
 
+    # Replay parser spike
+    replay_parser_command: str | None = None
+    replay_parser_timeout_seconds: int = 60
+    replay_parser_max_events: int = 500
+    local_replay_sample_path: str | None = None
+    allow_local_replay_paths: bool = False
+
     # AI Providers
     openai_api_key: str = ""
     anthropic_api_key: str = ""
