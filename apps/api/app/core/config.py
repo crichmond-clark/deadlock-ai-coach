@@ -77,6 +77,19 @@ class Settings(BaseSettings):
     ai_max_output_tokens: int = 2500
     ai_temperature: float = 0.2
     ai_store_raw_prompts: bool = False
+
+    # Embeddings / RAG
+    embedding_provider: Literal["openai", "openai_compatible", "mock"] = "openai"
+    embedding_model: str = "text-embedding-3-small"
+    embedding_api_key: str = ""
+    embedding_base_url: str = ""
+    embedding_dimensions: int = 1536
+    embedding_batch_size: int = 64
+    rag_chunk_size_chars: int = 1200
+    rag_chunk_overlap_chars: int = 200
+    rag_top_k: int = 5
+    rag_max_source_chars: int = 100_000
+
     openai_api_key: str = ""
     anthropic_api_key: str = ""
     litellm_api_key: str = ""
