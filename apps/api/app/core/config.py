@@ -60,6 +60,13 @@ class Settings(BaseSettings):
     local_replay_sample_path: str | None = None
     allow_local_replay_paths: bool = False
 
+    # Deadlock API
+    deadlock_api_base_url: str = "https://api.deadlock-api.com"
+    deadlock_assets_api_base_url: str = "https://assets.deadlock-api.com"
+    deadlock_api_key: str | None = None
+    deadlock_api_timeout_seconds: float = 10.0
+    deadlock_api_cache_ttl_minutes: int = 60
+
     # AI Providers
     openai_api_key: str = ""
     anthropic_api_key: str = ""
