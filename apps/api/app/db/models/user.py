@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from app.db.models.analysis_job import AnalysisJob
     from app.db.models.analysis_result import AnalysisResult
     from app.db.models.auth_identity import AuthIdentity
+    from app.db.models.knowledge_source import KnowledgeSource
     from app.db.models.replay_parse_artifact import ReplayParseArtifact
     from app.db.models.upload import Upload
 
@@ -49,3 +50,4 @@ class User(SQLModel, table=True):
     analysis_results: list["AnalysisResult"] = Relationship(back_populates="user")
     replay_parse_artifacts: list["ReplayParseArtifact"] = Relationship(back_populates="user")
     ai_model_runs: list["AIModelRun"] = Relationship(back_populates="user")
+    knowledge_sources: list["KnowledgeSource"] = Relationship(back_populates="owner")
