@@ -199,7 +199,22 @@ cd apps/api
 uv run python -m app.evals.run_analysis_fixtures --provider mock
 ```
 
-### 11. Auth, Uploads, and Analysis Jobs
+### 11. Replay Intelligence Validation
+
+Phase 6 is still gated. The parser supports bounded local discovery mode:
+
+```bash
+cd apps/replay-parser
+build/install/replay-parser/bin/replay-parser \
+  --input "$LOCAL_REPLAY_SAMPLE_PATH" \
+  --pretty \
+  --max-events 500 \
+  --debug-discovery
+```
+
+Do not commit `.dem` files or large debug outputs. Record verified findings in `docs/phase-6-replay-intelligence-readiness-findings.md`.
+
+### 12. Auth, Uploads, and Analysis Jobs
 
 - Local dev API calls use `X-Dev-User-Id` until production token validation is wired.
 - Better Auth is mounted at `/api/auth/[...all]` with Discord/GitHub provider configuration from environment variables.

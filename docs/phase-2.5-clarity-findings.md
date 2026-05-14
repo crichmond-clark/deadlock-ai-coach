@@ -7,6 +7,7 @@ Status: initial implementation.
 - Java CLI skeleton emits `deadlock-replay-parse-v1` placeholder JSON.
 - Python/API/worker integration can call a configured parser through subprocess and persist artifacts.
 - Real Clarity extraction has not been verified yet because no local Deadlock replay has been parsed in this session.
+- Phase 6 readiness tracking lives in [[phase-6-replay-intelligence-readiness-findings]].
 
 ## Reliable fields so far
 
@@ -23,4 +24,4 @@ Status: initial implementation.
 
 ## Recommendation
 
-No go/no-go decision yet. Build the parser with `gradle installDist`, parse one real `.dem`, then update this file with the real Clarity coverage before Phase 3 structured AI analysis relies on replay artifacts.
+No go/no-go decision yet. Build the parser with `gradle installDist`, parse one real `.dem` with `--debug-discovery`, then update the Phase 6 readiness findings with real Clarity coverage before Replay Intelligence implementation begins.
