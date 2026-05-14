@@ -25,6 +25,7 @@
   - [[#Phase 5 — AI Workflow Orchestration|Phase 5 — AI Workflow Orchestration]]
   - [[#Phase 6 — Replay Intelligence|Phase 6 — Replay Intelligence]]
   - [[#Phase 7 — Frontend Polish|Phase 7 — Frontend Polish]]
+  - [[#Phase 8 — Analytics Enhancements|Phase 8 — Analytics Enhancements]]
 - [[#8. Explicit Early Non-Goals|8. Explicit Early Non-Goals]]
 - [[#9. Current Recommended Next Step|9. Current Recommended Next Step]]
 
@@ -387,22 +388,21 @@ Done when:
 
 ### Phase 6 — Replay Intelligence
 
-Goal: move beyond summaries into deep match understanding, combining replay data with API analytics.
+Goal: move beyond summaries into deep replay-derived match understanding.
 
 Build:
 
 - richer Clarity event extraction (ability casts, projectiles, modifiers, damage instances)
 - death/timing/objective/teamfight timeline events
 - item/build progression extraction with API-resolved item details
-- cross-reference replay mechanics against API global stats (e.g., "your hook accuracy is 33% vs rank average of 41%")
 - teamfight detection via clustered damage events + death proximity
 - semantic timeline analysis
-- hero/matchup-specific coaching with API win-rate context
+- hero/matchup-specific coaching from parsed match events
 
 Done when:
 
 - replay-derived timelines produce meaningful coaching without manual summaries
-- coaching insights combine mechanical analysis (replay) with meta analysis (API)
+- coaching insights explain what happened in the match using parsed replay evidence
 
 ### Phase 7 — Frontend Polish
 
@@ -421,6 +421,24 @@ Build:
 Done when:
 
 - the product feels coherent, fast, and demo-ready
+
+### Phase 8 — Analytics Enhancements
+
+Goal: add meta-aware coaching after the core replay, API metadata, and AI analysis flows are stable.
+
+Build:
+
+- analytics client methods for selected Deadlock API aggregate endpoints
+- minimal cache strategy for hero stats, matchup stats, synergy stats, item stats, and build stats where useful
+- compact `analytics_context` data for AI prompts rather than a full analytics warehouse
+- optional rank/patch/region filters only if the API supports them cleanly
+- coaching comparisons such as hero win-rate context, common item/build choices, and matchup tendencies
+
+Done when:
+
+- analytics context improves Phase 3/6 coaching quality without blocking normal match or replay analysis
+- missing or stale analytics data degrades gracefully with source warnings
+- the scope is driven by proven coaching use cases, not by ingesting every available endpoint
 
 ## 8. Explicit Early Non-Goals
 

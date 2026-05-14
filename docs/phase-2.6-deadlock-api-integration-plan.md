@@ -530,19 +530,11 @@ Done when:
 - The job produces cached metadata and an enriched context.
 - No separate, parallel analysis endpoint exists unless explicitly approved later.
 
-### Phase 2.6F — Analytics Context (Optional Follow-Up)
+## Deferred Enhancement: Analytics Context
 
-Commits:
+Do not include broad hero/item/matchup analytics in Phase 2.6. Keep this phase focused on API clients, asset resolution, match metadata caching, enrichment, and match-id input.
 
-- [ ] Add analytics client methods for hero stats/counters/synergies/item stats.
-- [ ] Add minimal cache table or JSONB cache strategy.
-- [ ] Add enrichment fields for matchup/meta context.
-- [ ] Add tests with small analytics fixtures.
-
-Done when:
-
-- The enriched context can include hero/matchup stats for Phase 3 prompts.
-- Analytics fetch failures do not block match/replay analysis.
+Global analytics belongs in the later analytics enhancement phase in the overarching plan, after the core analysis flow is stable enough to prove which stats are actually useful for coaching.
 
 ## 9. Testing Strategy
 
@@ -587,7 +579,7 @@ Live smoke checks should not be mandatory in normal CI unless explicitly marked 
 | Schema changes | Keep raw JSONB; normalize only a small subset; ignore unknown fields; fixture tests catch breaking changes |
 | Misclassified IDs | Use generic `game_assets` with nullable `asset_kind`; do not assume every ID is a shop item |
 | Clarity/API disagreement | Preserve both values and add source warnings; do not silently overwrite replay data |
-| Scope creep | Implement analytics as optional Phase 2.6F after client/assets/metadata/enrichment are done |
+| Scope creep | Defer broad analytics to the overarching plan's Phase 8 Analytics Enhancements; keep Phase 2.6 limited to clients, assets, match metadata, enrichment, and match-id input |
 | Unsafe frontend rendering | Sanitize or avoid rendering raw description HTML/SVG from API payloads |
 
 ## 12. Open Questions
@@ -596,5 +588,4 @@ Live smoke checks should not be mandatory in normal CI unless explicitly marked 
 2. Should enriched contexts be persisted in a dedicated table, or stored as JSONB on existing analysis artifacts/results until the shape stabilizes?
 3. Should catalog sync run automatically on worker startup in development, or only via explicit command/job?
 4. How should the app detect stale match metadata, if at all? Match metadata is mostly immutable, but API parse/enrichment may improve over time.
-5. Which analytics endpoints are most useful for Phase 3 prompts, and which should wait until Phase 6 replay intelligence?
-6. Should live API smoke tests run in CI behind an opt-in environment flag, or remain manual/local only?
+5. Should live API smoke tests run in CI behind an opt-in environment flag, or remain manual/local only?
