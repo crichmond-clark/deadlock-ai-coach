@@ -1,4 +1,4 @@
-# Testing Guide — Phase 1 through 3
+# Testing Guide — Phase 1 through 4
 
 ## Quick Reference
 
@@ -7,6 +7,7 @@
 | Python unit/component tests | `uv run pytest tests/test_ai_provider_foundation.py tests/test_ai_analysis_schemas.py tests/test_ai_analysis_generator.py -v` | Python venv |
 | Full Python tests | `uv run pytest -v` | Python venv + Postgres for integration-sensitive tests |
 | Java parser tests | `gradle test` | Java 17+, Gradle |
+| RAG component tests | `uv run pytest tests/test_rag_chunking.py tests/test_embedding_providers.py tests/test_rag_search.py -v` | Python venv |
 | TypeScript typecheck | `npx tsc --noEmit` | Node.js, npm install |
 | Web build check | `npm run build` | Node.js, npm install |
 | Full integration | needs Docker | Postgres + Redis containers |
@@ -72,6 +73,9 @@ Phase 1-3 component tests cover these files:
 | `test_ai_provider_foundation.py` | 6 | Mock/OpenAI-compatible provider behavior, JSON extraction |
 | `test_ai_analysis_schemas.py` | 3 | Structured coaching schema and prompt context compaction |
 | `test_ai_analysis_generator.py` | 2 | Structured analysis generation and AI model run audit behavior |
+| `test_rag_chunking.py` | 3 | Deterministic chunking and content hashes |
+| `test_embedding_providers.py` | 3 | Mock and OpenAI-compatible embedding providers |
+| `test_rag_search.py` | 2 | Search ranking and retrieval-context degradation |
 
 Most component tests mock external dependencies (HTTP + DB). Endpoint tests in `test_health.py` and `test_analysis_jobs.py` need local PostgreSQL because dev-auth auto-creates users.
 
@@ -223,6 +227,12 @@ These endpoints have no auth required but are rate-limited. An optional `DEADLOC
 - `test_ai_provider_foundation.py`: provider protocol, mock provider, OpenAI-compatible HTTP behavior
 - `test_ai_analysis_schemas.py`: coaching output schema and bounded input context
 - `test_ai_analysis_generator.py`: structured generation and `ai_model_runs` audit persistence
+
+### Phase 4 — RAG System
+- `test_rag_chunking.py`: deterministic text splitting and stable hashes
+- `test_embedding_providers.py`: mock embeddings and OpenAI-compatible response validation
+- `test_rag_search.py`: ranked strategy retrieval and non-fatal retrieval context errors
+- Manual smoke: set `EMBEDDING_PROVIDER=mock`, run migrations, open `/strategy-search`, ingest a note, and search it
 
 ---
 

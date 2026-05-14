@@ -136,7 +136,44 @@ AI_MODEL=your-model
 
 Structured AI results are persisted as `result_kind=structured_ai_analysis` with schema `coaching-analysis-v1`. Raw prompts are not stored unless `AI_STORE_RAW_PROMPTS=true`.
 
-### 9. Auth, Uploads, and Analysis Jobs
+### 9. Strategy Knowledge / RAG
+
+Phase 4 adds pasted-note ingestion and semantic strategy search backed by PostgreSQL + pgvector.
+
+For local no-cost testing:
+
+```env
+EMBEDDING_PROVIDER=mock
+EMBEDDING_MODEL=mock-embedding
+```
+
+For OpenAI embeddings:
+
+```env
+EMBEDDING_PROVIDER=openai
+EMBEDDING_MODEL=text-embedding-3-small
+OPENAI_API_KEY=your_key
+```
+
+For OpenAI-compatible embedding endpoints:
+
+```env
+EMBEDDING_PROVIDER=openai_compatible
+EMBEDDING_BASE_URL=https://your-provider.example/v1
+EMBEDDING_API_KEY=your_key
+EMBEDDING_MODEL=your-embedding-model
+```
+
+Run migrations to enable pgvector and create the knowledge tables:
+
+```bash
+cd apps/api
+uv run alembic upgrade head
+```
+
+The frontend strategy search UI is available at `/strategy-search`.
+
+### 10. Auth, Uploads, and Analysis Jobs
 
 - Local dev API calls use `X-Dev-User-Id` until production token validation is wired.
 - Better Auth is mounted at `/api/auth/[...all]` with Discord/GitHub provider configuration from environment variables.
