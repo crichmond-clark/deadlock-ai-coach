@@ -173,7 +173,33 @@ uv run alembic upgrade head
 
 The frontend strategy search UI is available at `/strategy-search`.
 
-### 10. Auth, Uploads, and Analysis Jobs
+### 10. AI Workflow Orchestration
+
+Phase 5 moves analysis execution behind a typed workflow runner with DB telemetry in `workflow_runs` and `workflow_steps`.
+
+Default local settings:
+
+```env
+WORKFLOW_ENGINE=simple
+WORKFLOW_VERSION=analysis-workflow-v1
+ENABLE_RAG_IN_ANALYSIS=true
+ENABLE_DEADLOCK_API_ENRICHMENT=true
+```
+
+Optional provider fallback chain for structured AI generation:
+
+```env
+AI_PROVIDER_FALLBACKS=openai_compatible:qwen-model,minimax:abab-model
+```
+
+Run the deterministic workflow eval fixtures:
+
+```bash
+cd apps/api
+uv run python -m app.evals.run_analysis_fixtures --provider mock
+```
+
+### 11. Auth, Uploads, and Analysis Jobs
 
 - Local dev API calls use `X-Dev-User-Id` until production token validation is wired.
 - Better Auth is mounted at `/api/auth/[...all]` with Discord/GitHub provider configuration from environment variables.
