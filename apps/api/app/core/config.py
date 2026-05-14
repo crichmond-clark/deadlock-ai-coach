@@ -68,6 +68,15 @@ class Settings(BaseSettings):
     deadlock_api_cache_ttl_minutes: int = 60
 
     # AI Providers
+    analysis_mode: Literal["fake", "ai"] = "fake"
+    ai_provider: Literal["openai", "openai_compatible", "minimax", "mock"] = "openai"
+    ai_model: str = "gpt-4o-mini"
+    ai_api_key: str = ""
+    ai_base_url: str = ""
+    ai_timeout_seconds: float = 45.0
+    ai_max_output_tokens: int = 2500
+    ai_temperature: float = 0.2
+    ai_store_raw_prompts: bool = False
     openai_api_key: str = ""
     anthropic_api_key: str = ""
     litellm_api_key: str = ""
