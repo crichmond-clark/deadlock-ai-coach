@@ -1,4 +1,4 @@
-"""Subprocess wrapper for the Phase 3 replay parser CLI."""
+"""Subprocess wrapper for the Phase 2.5 replay parser CLI."""
 
 import asyncio
 import json

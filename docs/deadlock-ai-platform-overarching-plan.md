@@ -194,6 +194,25 @@ Structured coaching result is persisted
 Frontend displays result
 ```
 
+### Deadlock API Integration
+
+Use the [deadlock-api.com](https://deadlock-api.com) open-source API (MIT, 69+ endpoints) as a complementary data source alongside replay parsing.
+
+- **Match Metadata**: Structured post-match data (item/ability entries, deaths, stats, positions, objectives) — available with just a `match_id`, no replay needed.
+- **Asset Resolution**: Resolve raw hero/item/ability/upgrade IDs from replay output to names, images, stats, and descriptions via the Assets API.
+- **Global Analytics**: Hero win rates, counter stats, synergy stats, item win rates, build stats, ability order stats — later provides meta-aware context for AI coaching.
+- **Player History**: `/v1/players/{id}/match-history` enables long-term tracking without per-match replay uploads.
+- **Data Seeding**: Database dumps and SQL endpoint may later seed the RAG knowledge base with real match data.
+
+Integration approach:
+
+- Thin Python clients for separate hosts: `https://api.deadlock-api.com` for game/stat data and `https://assets.deadlock-api.com` for heroes/items/assets.
+- Background sync jobs to keep hero/game-asset catalog data fresh; analytics sync is a later slice after core metadata/enrichment works.
+- Match metadata fetched lazily when users provide a `match_id` (with or without a replay), cached by match ID, and stored as raw JSONB plus a small normalized summary.
+- API data enriches replay-derived artifacts without replacing the replay parser as the source of mechanical/tick-level learning.
+
+This API is not a replacement for replay parsing — it provides the global context and structured summary layer that makes AI coaching intelligent, while Clarity provides the tick-level mechanical data for deep analysis.
+
 ## 6. Core Domain Model Direction
 
 Initial tables likely include:
@@ -291,22 +310,44 @@ Done when:
 - parser failures are captured cleanly
 - downstream Python code does not depend on Clarity-specific objects
 
+### Phase 2.6 — Deadlock API Integration
+
+Goal: add structured match data and asset resolution as a complementary data layer alongside replay parsing.
+
+Build:
+
+- Separate Python clients for `api.deadlock-api.com` and `assets.deadlock-api.com`
+- Hero/game-asset resolution service (raw hero/item/ability/upgrade ID → name, image, metadata where available)
+- Match metadata service (fetch/cache structured post-match data given a `match_id`)
+- Background sync for hero/game-asset catalog data (scheduled Arq tasks)
+- Match metadata fetch integrated into the existing analysis pipeline (with or without replay)
+- API enrichment layer that augments Clarity replay output with resolved names and source warnings
+- Optional follow-up analytics slice for hero win rates, counters, synergies, item stats, and build stats
+
+Done when:
+
+- hero/game-asset IDs from replay output are resolved to names and images in the app
+- a `match_id` alone (no replay) can produce cached structured match metadata and an enriched context
+- enrichment gracefully degrades when the external API is unavailable
+- the API clients handle rate limits, caching, and errors gracefully
+
 ### Phase 3 — Structured AI Analysis
 
-Goal: first real intelligent workflow.
+Goal: first real intelligent workflow — now enriched with global analytics context.
 
 Build:
 
 - Instructor/Pydantic output schemas
 - AI client abstraction
 - match summary generation
-- coaching insight generation
+- coaching insight generation using both replay data (Clarity) and meta context (deadlock-api.com)
 - persisted structured AI results
 - prompt/model/workflow version metadata
 
 Done when:
 
 - an uploaded match summary or parsed artifact produces useful structured coaching output
+- coaching includes meta-aware context (e.g., "your hero has 47% win rate at your rank against this matchup")
 - frontend renders the structured result cleanly
 
 ### Phase 4 — RAG System
@@ -346,19 +387,22 @@ Done when:
 
 ### Phase 6 — Replay Intelligence
 
-Goal: move beyond summaries into match understanding.
+Goal: move beyond summaries into deep match understanding, combining replay data with API analytics.
 
 Build:
 
-- richer Clarity event extraction
+- richer Clarity event extraction (ability casts, projectiles, modifiers, damage instances)
 - death/timing/objective/teamfight timeline events
-- item/build progression extraction where possible
+- item/build progression extraction with API-resolved item details
+- cross-reference replay mechanics against API global stats (e.g., "your hook accuracy is 33% vs rank average of 41%")
+- teamfight detection via clustered damage events + death proximity
 - semantic timeline analysis
-- hero/matchup-specific coaching
+- hero/matchup-specific coaching with API win-rate context
 
 Done when:
 
 - replay-derived timelines produce meaningful coaching without manual summaries
+- coaching insights combine mechanical analysis (replay) with meta analysis (API)
 
 ### Phase 7 — Frontend Polish
 
@@ -394,4 +438,6 @@ Do not add early:
 
 ## 9. Current Recommended Next Step
 
-Start with a detailed Phase 1 foundation plan, then implement in small commits. Phase 1 should prove the full-stack skeleton and development workflow before adding real AI or replay complexity.
+Phase 1 and 2 are complete. Phase 2.5 (Clarity Replay Parser) has the Java CLI skeleton and Python integration built but real Clarity extraction from a `.dem` file has not been verified yet — the next step is to parse one real Deadlock replay with Clarity and update the findings doc.
+
+Phase 2.6 (Deadlock API Integration) can proceed in parallel with the Clarity spike, since it does not depend on replay parsing. It provides immediate value by resolving IDs from existing replay artifacts and enabling match_id-based analysis without replays.

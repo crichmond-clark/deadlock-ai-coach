@@ -22,7 +22,7 @@ Combines replay analysis, AI-generated coaching, retrieval-augmented strategy se
 - Docker + Docker Compose
 - Node.js 20+
 - Python 3.12+
-- Java 17+ for the Phase 3 replay parser spike
+- Java 17+ for the Phase 2.5 replay parser spike
 - (Optional for AI work) OpenAI / Anthropic API keys
 
 ### 2. Start Infrastructure

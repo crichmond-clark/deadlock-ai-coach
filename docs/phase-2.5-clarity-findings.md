@@ -1,4 +1,4 @@
-# Phase 3 Clarity Findings
+# Phase 2.5 Clarity Findings
 
 Status: initial implementation.
 
@@ -23,4 +23,4 @@ Status: initial implementation.
 
 ## Recommendation
 
-No go/no-go decision yet. Build the parser with `gradle installDist`, parse one real `.dem`, then update this file with the real Clarity coverage before Phase 4 relies on replay artifacts.
+No go/no-go decision yet. Build the parser with `gradle installDist`, parse one real `.dem`, then update this file with the real Clarity coverage before Phase 3 structured AI analysis relies on replay artifacts.

@@ -1,4 +1,4 @@
-# Phase 3 Clarity Replay Parser Spike Plan
+# Phase 2.5 Clarity Replay Parser Spike Plan
 
 ## Table of Contents
 
@@ -112,7 +112,7 @@ Key decisions:
   - Parser failure should mark the job failed for real replay jobs, with safe error text and persisted failure metadata when possible.
 
 - Local replay path is a developer-only spike input.
-  - Because binary upload/R2 is not implemented, Phase 3 needs a local way to point the worker at a replay file.
+  - Because binary upload/R2 is not implemented, Phase 2.5 needs a local way to point the worker at a replay file.
   - Use an environment variable such as `LOCAL_REPLAY_SAMPLE_PATH` for manual verification and/or allow `Upload.storage_key` values prefixed with `local://` in local dev only.
   - Do not allow arbitrary API users to submit server filesystem paths.
 
@@ -186,14 +186,14 @@ Key decisions:
 4. CLI invokes Clarity.
 5. CLI maps Clarity data into the normalized artifact schema.
 6. CLI writes JSON.
-7. Developer inspects the output and records findings in `docs/phase-3-clarity-findings.md`.
+7. Developer inspects the output and records findings in `docs/phase-2.5-clarity-findings.md`.
 
 ### Worker-integrated flow
 
 1. User/dev creates a replay upload record.
 2. Upload has either:
    - a local dev replay reference resolvable by the worker, or
-   - no file reference, in which case Phase 3 parser execution is skipped and the job fails with clear instructions or falls back only when explicitly configured.
+   - no file reference, in which case Phase 2.5 parser execution is skipped and the job fails with clear instructions or falls back only when explicitly configured.
 3. User creates an analysis job.
 4. Arq worker loads the job and upload.
 5. Worker resolves replay file path using local-only settings.
@@ -445,8 +445,8 @@ For replay jobs with parsed artifacts, include parse summary in the existing `An
 ## 7. File Changes
 
 - Create:
-  - `docs/phase-3-clarity-replay-parser-plan.md` — this plan.
-  - `docs/phase-3-clarity-findings.md` — running notes from parsing real replay files; include what fields are reliable and what is missing.
+  - `docs/phase-2.5-clarity-replay-parser-plan.md` — this plan.
+  - `docs/phase-2.5-clarity-findings.md` — running notes from parsing real replay files; include what fields are reliable and what is missing.
   - `apps/replay-parser/settings.gradle.kts` — Gradle project settings.
   - `apps/replay-parser/build.gradle.kts` — Java application plugin, Clarity dependency, Jackson dependency, test dependencies.
   - `apps/replay-parser/gradle.properties` — Java/Gradle properties.
@@ -468,7 +468,7 @@ For replay jobs with parsed artifacts, include parse summary in the existing `An
 
 - Modify:
   - `.env.example` — add local replay parser configuration variables.
-  - `README.md` — add Java 17 requirement, parser build command, parser CLI usage, and Phase 3 verification steps.
+  - `README.md` — add Java 17 requirement, parser build command, parser CLI usage, and Phase 2.5 verification steps.
   - `.gitignore` — ensure replay files, parser build outputs, and local artifacts are ignored; e.g. `*.dem`, `*.dem.bz2`, `apps/replay-parser/build/`, `tmp/replay-parser/`.
   - `apps/api/app/core/config.py` — add parser settings.
   - `apps/api/app/db/models/__init__.py` — export `ReplayParseArtifact`.
@@ -480,22 +480,22 @@ For replay jobs with parsed artifacts, include parse summary in the existing `An
   - `apps/api/app/workers/analysis.py` — call replay parser for replay uploads when configured and persist artifact.
   - `apps/web/src/lib/api.ts` — add `ReplayParseArtifactResponse` type and `fetchReplayArtifact(jobId)` helper.
   - `apps/web/src/app/analyses/[jobId]/page.tsx` — render parser artifact summary/warnings when available.
-  - `apps/web/src/app/page.tsx` — optionally clarify replay upload currently requires local parser setup for Phase 3 spike.
+  - `apps/web/src/app/page.tsx` — optionally clarify replay upload currently requires local parser setup for Phase 2.5 spike.
 
 - Delete:
   - None.
 
 ## 8. Implementation Phases
 
-Use one branch for all Phase 3 replay parser spike work:
+Use one branch for all Phase 2.5 replay parser spike work:
 
-- Branch: `feature/replay-parser-phase-3`
+- Branch: `feature/replay-parser-phase-2.5`
 - Each subphase below should be implemented as one or more focused commits on that branch.
-- Do not create separate branches for 3A/3B/3C unless explicitly requested.
+- Do not create separate branches for 2.5A/2.5B/2.5C unless explicitly requested.
 
-### Phase 3A — Java parser CLI skeleton
+### Phase 2.5A — Java parser CLI skeleton
 
-- Branch: `feature/replay-parser-phase-3`
+- Branch: `feature/replay-parser-phase-2.5`
 - Commits:
   - [ ] Add `apps/replay-parser` Gradle Java application with Clarity and Jackson dependencies.
   - [ ] Add CLI argument parsing for `--input`, `--output`, `--pretty`, and `--max-events`.
@@ -507,24 +507,24 @@ Use one branch for all Phase 3 replay parser spike work:
   - `./gradlew run --args="--input <missing>"` exits with the expected code.
   - A known local file can produce schema-valid placeholder JSON.
 
-### Phase 3B — Clarity integration and normalized extraction
+### Phase 2.5B — Clarity integration and normalized extraction
 
-- Branch: `feature/replay-parser-phase-3`
+- Branch: `feature/replay-parser-phase-2.5`
 - Commits:
   - [ ] Wire Clarity parser into `ClarityReplayParser`.
   - [ ] Extract available replay overview/match metadata.
   - [ ] Extract player/entity summary where available.
   - [ ] Extract a capped basic timeline or capability summary from available Clarity streams.
   - [ ] Add warnings for unavailable/unknown fields instead of failing the whole parse.
-  - [ ] Document first real replay findings in `docs/phase-3-clarity-findings.md`.
+  - [ ] Document first real replay findings in `docs/phase-2.5-clarity-findings.md`.
 - Done when:
   - One real local Deadlock replay can be parsed into `deadlock-replay-parse-v1` JSON.
   - The output includes enough information to decide whether Clarity is viable for later phases.
   - The findings doc states which fields are reliable, unreliable, and unavailable.
 
-### Phase 3C — Python subprocess wrapper and persistence
+### Phase 2.5C — Python subprocess wrapper and persistence
 
-- Branch: `feature/replay-parser-phase-3`
+- Branch: `feature/replay-parser-phase-2.5`
 - Commits:
   - [ ] Add replay parser settings to FastAPI config and `.env.example`.
   - [ ] Add `ReplayParseArtifact` model and Alembic migration.
@@ -536,9 +536,9 @@ Use one branch for all Phase 3 replay parser spike work:
   - Python tests pass without requiring Java or a real replay file.
   - Wrapper failure modes produce safe, short errors.
 
-### Phase 3D — Worker integration and API access
+### Phase 2.5D — Worker integration and API access
 
-- Branch: `feature/replay-parser-phase-3`
+- Branch: `feature/replay-parser-phase-2.5`
 - Commits:
   - [ ] Update worker to parse replay uploads when parser is configured and a local replay path is resolvable.
   - [ ] Persist replay artifact linked to job/upload/user.
@@ -551,9 +551,9 @@ Use one branch for all Phase 3 replay parser spike work:
   - Parser failures mark the job failed with a safe error.
   - Artifact endpoint enforces ownership.
 
-### Phase 3E — Frontend artifact summary and documentation
+### Phase 2.5E — Frontend artifact summary and documentation
 
-- Branch: `feature/replay-parser-phase-3`
+- Branch: `feature/replay-parser-phase-2.5`
 - Commits:
   - [ ] Add frontend API helper/type for replay parse artifacts.
   - [ ] Update analysis detail page to show parser summary and warnings.
@@ -565,21 +565,21 @@ Use one branch for all Phase 3 replay parser spike work:
   - The analysis page gracefully handles no artifact, pending jobs, failed parser jobs, and successful parser jobs.
   - README has clear commands to build parser, run parser directly, run API/worker, and verify the full flow.
 
-### Phase 3F — Final verification and decision gate
+### Phase 2.5F — Final verification and decision gate
 
-- Branch: `feature/replay-parser-phase-3`
+- Branch: `feature/replay-parser-phase-2.5`
 - Commits:
   - [ ] Run all backend, frontend, and parser checks.
   - [ ] Manually verify a real replay parse through CLI.
   - [ ] Manually verify worker-integrated parse using Docker Postgres/Redis.
-  - [ ] Update `docs/phase-3-clarity-findings.md` with a clear go/no-go recommendation for Clarity.
+  - [ ] Update `docs/phase-2.5-clarity-findings.md` with a clear go/no-go recommendation for Clarity.
 - Done when:
   - `cd apps/replay-parser && ./gradlew test` passes.
   - `cd apps/api && uv run pytest tests/ -q && uv run ruff check .` passes.
   - `cd apps/web && npm run type-check && npm run lint && npm run build` passes.
   - Manual CLI parse succeeds against one real replay.
   - Manual worker flow succeeds or documents exactly why Clarity is blocked.
-  - Findings doc answers whether Phase 4/AI work can rely on parsed replay artifacts.
+  - Findings doc answers whether Phase 3 AI work can rely on parsed replay artifacts.
 
 ## 9. Testing Strategy
 
@@ -673,7 +673,7 @@ Use one branch for all Phase 3 replay parser spike work:
   - `local://` paths or `LOCAL_REPLAY_SAMPLE_PATH` must be local-dev-only and gated by `ALLOW_LOCAL_REPLAY_PATHS=true`.
 
 - Filesystem access:
-  - Parser reads replay files from disk in Phase 3.
+  - Parser reads replay files from disk in Phase 2.5.
   - Do not expose an API field allowing users to request arbitrary server paths.
   - In production, parser should read from controlled object storage/download paths, not raw user paths.
 
@@ -724,18 +724,18 @@ Use one branch for all Phase 3 replay parser spike work:
   - Mitigation: Include `schema_version` and keep downstream code tolerant of missing fields.
 
 - Risk: This phase may overlap with structured AI analysis naming from the overarching plan.
-  - Mitigation: This document follows the README phase order where Phase 3 is the Clarity Replay Parser Spike. If we keep the overarching plan's numbering, this same work can be labeled Phase 2.5.
+  - Mitigation: This document now follows the overarching plan's numbering: Phase 2.5 is the Clarity Replay Parser Spike, and Phase 3 is reserved for Structured AI Analysis.
 
 ## 12. Open Questions
 
 - Do we have a real Deadlock replay file available locally for manual verification?
-  - Must be resolved before implementation reaches Phase 3B/3F. If not, implementation can build the CLI and wrapper but the spike cannot answer Clarity viability.
+  - Must be resolved before implementation reaches Phase 2.5B/2.5F. If not, implementation can build the CLI and wrapper but the spike cannot answer Clarity viability.
 
 - Should local replay path resolution use only `LOCAL_REPLAY_SAMPLE_PATH`, or should `Upload.storage_key=local://...` be supported in local dev?
   - Recommendation: start with only `LOCAL_REPLAY_SAMPLE_PATH` for safety and simplicity. Add `local://` only if manual testing needs multiple files.
 
 - Should parser failure fail the whole analysis job or fall back to fake analysis?
-  - Recommendation: for replay uploads in Phase 3, parser failure should fail the job so we can see real viability issues. Match summaries and screenshots continue through the Phase 2 fake flow.
+  - Recommendation: for replay uploads in Phase 2.5, parser failure should fail the job so we can see real viability issues. Match summaries and screenshots continue through the Phase 2 fake flow.
 
 - Should the Java parser emit partial artifacts on failure?
   - Recommendation: not initially. Keep failure simple. Add partial artifacts only if Clarity often exposes useful partial data before failing.

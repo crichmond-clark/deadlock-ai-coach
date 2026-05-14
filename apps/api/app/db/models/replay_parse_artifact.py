@@ -1,4 +1,4 @@
-"""Replay parse artifact model for Phase 3 parser spike."""
+"""Replay parse artifact model for Phase 2.5 parser spike."""
 
 import uuid
 from datetime import datetime
