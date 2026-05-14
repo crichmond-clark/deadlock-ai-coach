@@ -22,6 +22,7 @@ Combines replay analysis, AI-generated coaching, retrieval-augmented strategy se
 - Docker + Docker Compose
 - Node.js 20+
 - Python 3.12+
+- Java 17+ for the Phase 3 replay parser spike
 - (Optional for AI work) OpenAI / Anthropic API keys
 
 ### 2. Start Infrastructure
@@ -77,7 +78,28 @@ cd apps/api
 uv run arq app.workers.worker.WorkerSettings
 ```
 
-### 7. Auth, Uploads, and Analysis Jobs
+### 7. Replay Parser Spike
+
+Build and run the local parser CLI:
+
+```bash
+cd apps/replay-parser
+gradle test
+gradle installDist
+build/install/replay-parser/bin/replay-parser --input /path/to/match.dem --pretty
+```
+
+For worker integration, set local-only parser variables in `.env.local`:
+
+```env
+REPLAY_PARSER_COMMAND=/absolute/path/to/apps/replay-parser/build/install/replay-parser/bin/replay-parser
+LOCAL_REPLAY_SAMPLE_PATH=/absolute/path/to/match.dem
+ALLOW_LOCAL_REPLAY_PATHS=true
+```
+
+Replay files are ignored by git. Do not commit `.dem` files or parser output artifacts.
+
+### 8. Auth, Uploads, and Analysis Jobs
 
 - Local dev API calls use `X-Dev-User-Id` until production token validation is wired.
 - Better Auth is mounted at `/api/auth/[...all]` with Discord/GitHub provider configuration from environment variables.
