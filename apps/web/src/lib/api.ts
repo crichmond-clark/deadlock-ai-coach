@@ -149,6 +149,27 @@ export interface AnalysisJobResponse {
     result: AnalysisResultSummary | null;
 }
 
+export interface ReplayParseArtifactResponse {
+    id: string;
+    job_id: string | null;
+    upload_id: string;
+    parser_name: string;
+    parser_version: string | null;
+    schema_version: string;
+    status: string;
+    artifact: {
+        stats?: Record<string, unknown>;
+        match?: Record<string, unknown>;
+        players?: unknown[];
+        timeline?: unknown[];
+        [key: string]: unknown;
+    } | null;
+    warnings: string[];
+    error_message: string | null;
+    parse_duration_ms: number | null;
+    created_at: string;
+}
+
 export interface AnalysisResultResponse {
     id: string;
     job_id: string;
@@ -187,5 +208,11 @@ export async function fetchAnalysisJob(jobId: string) {
 export async function fetchAnalysisResult(jobId: string) {
     return request<AnalysisResultResponse>(
         `/api/v1/analysis-jobs/${jobId}/result`,
+    );
+}
+
+export async function fetchReplayArtifact(jobId: string) {
+    return request<ReplayParseArtifactResponse>(
+        `/api/v1/analysis-jobs/${jobId}/replay-artifact`,
     );
 }

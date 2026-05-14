@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchAnalysisJob, fetchAnalysisResult, setDevUserId } from "@/lib/api";
+import { fetchAnalysisJob, fetchAnalysisResult, fetchReplayArtifact, setDevUserId } from "@/lib/api";
 
 const DEV_USER_ID = "00000000-0000-0000-0000-000000000001";
 
@@ -27,6 +27,13 @@ export default function AnalysisDetailPage() {
     queryKey: ["analysis-result", jobId],
     queryFn: () => fetchAnalysisResult(jobId),
     enabled: jobQuery.data?.status === "succeeded",
+  });
+
+  const artifactQuery = useQuery({
+    queryKey: ["replay-artifact", jobId],
+    queryFn: () => fetchReplayArtifact(jobId),
+    enabled: jobQuery.data?.status === "succeeded",
+    retry: false,
   });
 
   return (
@@ -70,6 +77,7 @@ export default function AnalysisDetailPage() {
 
       {resultQuery.isLoading ? <Card title="Result">Loading result...</Card> : null}
       {resultQuery.data ? <ResultCard result={resultQuery.data} /> : null}
+      {artifactQuery.data ? <ReplayArtifactCard artifact={artifactQuery.data} /> : null}
       {jobQuery.data?.status === "succeeded" && resultQuery.isError ? (
         <Card title="Result">
           <p className="text-red-400">Could not load completed result.</p>
@@ -97,6 +105,35 @@ function ResultCard({
         <ResultList title="Improvement Areas" items={result.payload.improvement_areas} />
         <ResultList title="Recommended Focus" items={result.payload.recommended_focus} />
         <ResultList title="Next Steps" items={result.payload.next_steps} />
+      </div>
+    </Card>
+  );
+}
+
+function ReplayArtifactCard({
+  artifact,
+}: {
+  artifact: Awaited<ReturnType<typeof fetchReplayArtifact>>;
+}) {
+  const parsed = artifact.artifact;
+  const players = Array.isArray(parsed?.players) ? parsed.players.length : 0;
+  const events = Array.isArray(parsed?.timeline) ? parsed.timeline.length : 0;
+  const duration = parsed?.match?.duration_seconds;
+
+  return (
+    <Card title="Replay Parser Artifact">
+      <div className="space-y-3 text-sm text-slate-400">
+        <dl className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <Detail label="Parser" value={`${artifact.parser_name}${artifact.parser_version ? ` ${artifact.parser_version}` : ""}`} />
+          <Detail label="Schema" value={artifact.schema_version} />
+          <Detail label="Duration" value={duration ? `${duration}s` : "Unavailable"} />
+          <Detail label="Parse Time" value={artifact.parse_duration_ms ? `${artifact.parse_duration_ms}ms` : "Unavailable"} />
+          <Detail label="Players" value={String(players)} />
+          <Detail label="Timeline Events" value={String(events)} />
+        </dl>
+        {artifact.warnings.length > 0 ? (
+          <ResultList title="Parser Warnings" items={artifact.warnings} />
+        ) : null}
       </div>
     </Card>
   );
